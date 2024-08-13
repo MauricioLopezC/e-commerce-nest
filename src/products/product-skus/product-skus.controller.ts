@@ -1,45 +1,52 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { ProductSkusService } from './product-skus.service';
 import { ProductSku } from '@prisma/client';
 import { CreateProductSkuDto } from './dtos/CreateProductSkuDto';
 import { UpdateProductSkuDto } from './dtos/UpdateProductSkuDto';
+import { PublicRoute } from 'src/auth/decorators/public-routes.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/enums/role.enum';
 
 @Controller('products/:id/skus')
 export class ProductSkusController {
   constructor(private productSkusService: ProductSkusService) { }
 
+  @PublicRoute()
   @Get()
-  getAllProducts(@Param('id') id: string): Promise<ProductSku[]> {
-    console.log("hola XD")
-    return this.productSkusService.getAll(Number(id))
+  getAllProducts(@Param('id', ParseIntPipe) id: number): Promise<ProductSku[]> {
+    return this.productSkusService.getAll(id)
   }
 
-  @Post()
-  createProduct(@Param('id') id: string, @Body() productSku: CreateProductSkuDto) {
-    return this.productSkusService.createSku(Number(id), productSku)
+  @Roles(Role.Admin)
+  @Post() //necesario
+  createProduct(@Param('id', ParseIntPipe) id: number, @Body() productSku: CreateProductSkuDto) {
+    return this.productSkusService.createSku(id, productSku)
   }
 
+  @PublicRoute()
   @Get(':skuId')
-  async getOneProduct(@Param('id') id: string, @Param('skuId') skuId: string): Promise<ProductSku> {
-    const productFound = await this.productSkusService.getSkuById(Number(skuId), Number(id))
+  async getOneProduct(@Param('id', ParseIntPipe) id: number, @Param('skuId', ParseIntPipe) skuId: number): Promise<ProductSku> {
+    const productFound = await this.productSkusService.getSkuById(skuId, id)
     if (!productFound) throw new NotFoundException("Product does not exist")
     return productFound
   }
 
+  @Roles(Role.Admin)
   @Patch(':skuId')
-  async updateProduct(@Param('skuId') skuId: string, @Param('id') id: string, @Body() updateSkuDto: UpdateProductSkuDto) {
+  async updateProduct(@Param('skuId', ParseIntPipe) skuId: number, @Param('id', ParseIntPipe) id: number, @Body() updateSkuDto: UpdateProductSkuDto) {
     try {
-      return await this.productSkusService.updateSku(Number(skuId), Number(id), updateSkuDto)
+      return await this.productSkusService.updateSku(skuId, id, updateSkuDto)
     } catch (error) {
       throw new NotFoundException("Product does not exist")
     }
   }
   //
+  @Roles(Role.Admin)
   @Delete(':skuId')
-  async removeProduct(@Param('id') id: string, @Param('skuId') skuId: string): Promise<ProductSku> {
+  async removeProduct(@Param('id', ParseIntPipe) id: number, @Param('skuId', ParseIntPipe) skuId: number): Promise<ProductSku> {
     //if no product has the id, prisma will crash
     try {
-      return await this.productSkusService.removeSku(Number(skuId), Number(id))
+      return await this.productSkusService.removeSku(skuId, id)
     } catch (error) {
       throw new NotFoundException("Product does not exist")
     }

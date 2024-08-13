@@ -61,7 +61,5 @@ export class ProductSkusService {
     return deletedSku
   }
 
-
-
-
 }
+
