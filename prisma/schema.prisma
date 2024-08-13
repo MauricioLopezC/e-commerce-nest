@@ -20,37 +20,61 @@ model Product {
   images      Images[]
   cartItem    CartItem[]
   productSku  ProductSku[]
+  favorites   Favorite[]
+  orders      Order[]
+  orderItems  OrderItem[]
+  userReviews UserReview[]
 }
 
 model ProductSku {
-  id        Int      @id @default(autoincrement())
-  product   Product  @relation(fields: [productId], references: [id])
-  productId Int
-  size      String
-  color     String
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int         @id @default(autoincrement())
+  product    Product     @relation(fields: [productId], references: [id])
+  productId  Int
+  size       String
+  color      String
+  quantity   Int
+  cartItem   CartItem[]
+  order      Order[]
+  orderItems OrderItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 }
 
 model Images {
-  id            Int     @id @default(autoincrement())
-  product       Product @relation(fields: [productCombId], references: [id])
-  productCombId Int
-  imgSrc        String
+  id           Int     @id @default(autoincrement())
+  imgSrc       String
+  product      Product @relation(fields: [productSkuId], references: [id])
+  productSkuId Int
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  dni           Int?     @unique
+  id            Int          @id @default(autoincrement())
   firstName     String
   lastName      String
-  email         String   @unique
-  verifiedEmail Boolean  @default(false)
+  email         String       @unique
+  verifiedEmail Boolean      @default(false)
+  role          String       @default("USER")
   password      String
   cart          Cart?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  favorites     Favorite[]
+  order         Order[]
+  userReviews   UserReview[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model UserReview {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  productId   Int
+  orderItemId Int      @unique
+  score       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id])
 }
 
 model Cart {
@@ -62,15 +86,67 @@ model Cart {
 }
 
 model CartItem {
-  id        Int     @id @default(autoincrement())
-  cart      Cart    @relation(fields: [cartId], references: [id])
-  cartId    Int
-  product   Product @relation(fields: [productId], references: [id])
-  productId Int
-  color     String
-  size      String
-  quantity  Int
+  id           Int        @id @default(autoincrement())
+  cart         Cart       @relation(fields: [cartId], references: [id])
+  cartId       Int
+  product      Product    @relation(fields: [productId], references: [id])
+  productId    Int
+  productSku   ProductSku @relation(fields: [productSkuId], references: [id])
+  productSkuId Int
+  quantity     Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([productSkuId, cartId])
 }
 
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, userId])
+  @@map("Favorites")
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  user         User        @relation(fields: [userId], references: [id])
+  userId       Int
+  product      Product     @relation(fields: [productId], references: [id])
+  productId    Int
+  productSku   ProductSku  @relation(fields: [productSkuId], references: [id])
+  productSkuId Int
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model OrderItem {
+  id           Int         @id @default(autoincrement())
+  orderId      Int
+  productId    Int
+  productSkuId Int
+  quantity     Int
+  price        Float
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  userReviews  UserReview?
+
+  order      Order      @relation(fields: [orderId], references: [id])
+  product    Product    @relation(fields: [productId], references: [id])
+  productSku ProductSku @relation(fields: [productSkuId], references: [id])
+}
+
+//consider change Purchases name for Orders
+
+//implementar los siguientes modelos:
+//Payments, references to PurchaseId
 //importante que no sea unica asi podemos guardar todos los productos de todos los usuarios y luego lo relacionamos con el 
+//cart que si teine userId unico
+
 //cart que si teine userId unico

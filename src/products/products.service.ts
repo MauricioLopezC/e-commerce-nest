@@ -61,21 +61,21 @@ export class ProductsService {
     return newProductSku
   }
 
-  async updateProduct(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
+  async updateProduct(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
     console.log(updateProductDto)
     const updatedProduct = await this.prisma.product.update({
       where: {
-        id: Number(id)
+        id: id
       },
       data: updateProductDto
     })
     return updatedProduct
   }
 
-  async removeProduct(id: string): Promise<Product> {
+  async removeProduct(id: number): Promise<Product> {
     const deletedProduct = await this.prisma.product.delete({
       where: {
-        id: Number(id) //mejor implementar una validacion a nivel de controlador porque esto crashea
+        id: id //mejor implementar una validacion a nivel de controlador porque esto crashea
       }
     })
     return deletedProduct
