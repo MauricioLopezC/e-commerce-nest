@@ -1,5 +1,4 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-
 export class UpdateProductDto {
   @IsString()
   @IsNotEmpty()
@@ -25,4 +24,5 @@ export class UpdateProductDto {
   @IsNotEmpty()
   @IsOptional()
   sex: string;
+
 }

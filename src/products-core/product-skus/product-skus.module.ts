@@ -4,8 +4,8 @@ import { ProductSkusController } from './product-skus.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  providers: [ProductSkusService],
   controllers: [ProductSkusController],
+  providers: [ProductSkusService],
   imports: [PrismaModule]
 })
 export class ProductSkusModule { }
