@@ -9,6 +9,8 @@ export class ProductSkusService {
   //TODO: custom error handling in create, update and remove
   //TODO: Add array image attribute in UpdateProductSkusDto
   //and add simple imageService, this way we can manage upload images easy
+  //NOTE: we will use a external service to manage images, like cloudinary
+  //integrate could be hard, so we will integrate it at the end
   constructor(private prisma: PrismaService) { }
 
   async create(productId: number, createProductSkusDto: CreateProductSkusDto): Promise<ProductSku> {
@@ -27,6 +29,9 @@ export class ProductSkusService {
     const skus = await this.prisma.productSku.findMany({
       where: {
         productId
+      },
+      include: {
+        images: true
       }
     })
     return skus
@@ -37,13 +42,16 @@ export class ProductSkusService {
       where: {
         id,
         productId
+      },
+      include: {
+        images: true
       }
     })
     return sku
   }
 
   async update(productId: number, id: number, updateProductSkusDto: UpdateProductSkusDto): Promise<ProductSku> {
-    const updatedSku = this.prisma.productSku.update({
+    const updatedSku = await this.prisma.productSku.update({
       where: {
         id,
         productId

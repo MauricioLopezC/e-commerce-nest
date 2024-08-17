@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, NotFoundException } from '@nestjs/common';
 import { ProductSkusService } from './product-skus.service';
 import { CreateProductSkusDto } from './dto/create-product-skus.dto';
 import { UpdateProductSkusDto } from './dto/update-product-skus.dto';
@@ -14,8 +14,8 @@ export class ProductSkusController {
 
   @Roles(Role.Admin)
   @Post()
-  create(@Param('productId', ParseIntPipe) productId: number, @Body() createProductSkusDto: CreateProductSkusDto) {
-    return this.productSkusService.create(productId, createProductSkusDto);
+  async create(@Param('productId', ParseIntPipe) productId: number, @Body() createProductSkusDto: CreateProductSkusDto) {
+    return await this.productSkusService.create(productId, createProductSkusDto);
   }
 
   @PublicRoute()
@@ -26,8 +26,10 @@ export class ProductSkusController {
 
   @PublicRoute()
   @Get(':id')
-  findOne(@Param('productId', ParseIntPipe) productId: number, @Param('id', ParseIntPipe) id: number) {
-    return this.productSkusService.findOne(productId, id);
+  async findOne(@Param('productId', ParseIntPipe) productId: number, @Param('id', ParseIntPipe) id: number) {
+    const productSkuFound = await this.productSkusService.findOne(productId, id)
+    if (!productSkuFound) throw new NotFoundException("Product Sku not found")
+    return productSkuFound
   }
 
   @Roles(Role.Admin)
