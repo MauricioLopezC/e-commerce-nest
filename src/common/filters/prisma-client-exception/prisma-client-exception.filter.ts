@@ -14,6 +14,7 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
 
     console.log(exception)
 
+    //TODO: add case for foreing key constraint
     switch (exception.code) {
       case 'P2002': {
         const status = HttpStatus.CONFLICT
@@ -38,6 +39,13 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
           message: `${exception.meta.modelName ?? ''} not found, ${exception.meta?.cause}`
         })
         break;
+      }
+      case 'P2003': {
+        const status = HttpStatus.CONFLICT
+        response.status(status).json({
+          statusCode: status,
+          message: "Foreing key constraint failed"
+        })
       }
       default: {
         // default 500 error code

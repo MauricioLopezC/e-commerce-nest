@@ -3,6 +3,7 @@ import { CloudinaryService } from './cloudinary.service';
 import { CloudinaryProvider } from './cloudinary/cloudinary';
 
 @Module({
-  providers: [CloudinaryService, CloudinaryProvider]
+  providers: [CloudinaryService, CloudinaryProvider],
+  exports: [CloudinaryService]
 })
 export class CloudinaryModule { }
