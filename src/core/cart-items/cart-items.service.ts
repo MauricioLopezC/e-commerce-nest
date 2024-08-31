@@ -13,6 +13,11 @@ export class CartItemsService {
   constructor(private prisma: PrismaService) { }
 
   async create(cartId: number, createCartItemDto: CreateCartItemDto): Promise<CartItem> {
+    //OPTIMIZE: get product sku to check thath item exist could be unnecessary because
+    //if productSku doesn't exist, we are violating the integrity of the DB and 
+    //prisma will throw foreign key constraint error, same for product
+    //BUT in this case we need to check productsku is correct before create item,
+    //because we need to compare cartItemQuantity > productSku.quantity
     const cartItemQuantity = createCartItemDto.quantity
     const productSku = await this.prisma.productSku.findUnique({
       where: {

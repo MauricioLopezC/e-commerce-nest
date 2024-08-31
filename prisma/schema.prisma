@@ -124,6 +124,7 @@ model Order {
   productId    Int
   productSku   ProductSku  @relation(fields: [productSkuId], references: [id])
   productSkuId Int
+  status       String      @default("IN_PROGRESS")
   orderItems   OrderItem[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt

@@ -43,7 +43,9 @@ export class ImagesController {
     return result.secure_url
   }
 
-  @Delete('id')
+  //TODO: Multiple file upload
+
+  @Delete(':id')
   @Roles(Role.Admin)
   @UseInterceptors(FileInterceptor('file'))
   async deleteAndDestroy(@Param('id', ParseIntPipe) id: number) {
