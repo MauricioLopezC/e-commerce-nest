@@ -4,8 +4,6 @@ import { RegisterService } from './register/register.service';
 import { LoginDto } from './login/dto/LoginDto';
 import { LoginService } from './login/login.service';
 import { PublicRoute } from './decorators/public-routes.decorator';
-import { Roles } from './decorators/roles.decorator';
-import { Role } from './enums/role.enum';
 import { RolesGuard } from './guards/roles.guard';
 
 @Controller('auth')
@@ -30,6 +28,7 @@ export class AuthController {
   @PublicRoute()
   @Post('/login')
   login(@Body() loginDto: LoginDto) {
+    //TODO: add a cokie with the access token
     return this.loginService.login(loginDto)
   }
 

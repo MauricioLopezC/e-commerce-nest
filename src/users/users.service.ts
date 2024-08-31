@@ -13,7 +13,6 @@ export class UsersService {
       data: createUserDto
     })
     //should return User without the password and many other sensitive data
-    //podriamos incluir un carrito apenas se crea el usuario
     return createdUser
   }
 

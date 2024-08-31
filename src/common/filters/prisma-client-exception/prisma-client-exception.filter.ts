@@ -14,7 +14,6 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
 
     console.log(exception)
 
-    //TODO: add case for foreing key constraint
     switch (exception.code) {
       case 'P2002': {
         const status = HttpStatus.CONFLICT

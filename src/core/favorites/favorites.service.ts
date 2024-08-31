@@ -13,6 +13,7 @@ export class FavoritesService {
     //si bien esto deberia controlarlo la app frontend, algun usuario podria llamar
     //a la api con fetch desde consola y crear favoritos con productos que 
     //no existan
+    //TODO: don't throw HTTP exception here, only business logic errors here
     try {
       const createdFavorite = await this.prisma.favorite.create({
         data: { userId: userId, productId: createFavoriteDto.productId }

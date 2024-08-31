@@ -20,7 +20,17 @@ export class CloudinaryService {
     })
   }
 
-  async destroyImage(publicId: string) {
+  async uploadMultipleFiles(files: Express.Multer.File[]): Promise<string[]> {
+    const urls = await Promise.all(files.map(
+      async (file): Promise<string> => {
+        const { secure_url } = await this.uploadFile(file)
+        return secure_url
+      }
+    ))
+    return urls
+  }
+
+  async destroyImage(publicId: string): Promise<CloudinaryResponse> {
     return await cloudinary.uploader.destroy(publicId)
   }
 
