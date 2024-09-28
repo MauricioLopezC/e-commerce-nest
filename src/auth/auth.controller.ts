@@ -27,9 +27,10 @@ export class AuthController {
 
   @PublicRoute()
   @Post('/login')
-  login(@Body() loginDto: LoginDto) {
+  async login(@Body() loginDto: LoginDto) {
     //TODO: add a cokie with the access token
-    return this.loginService.login(loginDto)
+    const token = await this.loginService.login(loginDto)
+    return token
   }
 
   @Get('/profile')

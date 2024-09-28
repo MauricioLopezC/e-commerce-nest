@@ -26,6 +26,7 @@ export class ProductSkusService {
   }
 
   async findAll(productId: number): Promise<ProductSku[]> {
+    console.log("PROD ID ==> ", productId)
     const skus = await this.prisma.productSku.findMany({
       where: {
         productId

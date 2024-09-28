@@ -12,6 +12,9 @@ export class LoginService {
   ) { }
 
   async login(loginDto: LoginDto) {
+    //TODO: throw custom error here and instead HttpErrors,
+    //HttpErrors will be throw by AuthController
+
     const user = await this.usersService.findByEmail(loginDto.email)
 
     if (!user) throw new UnauthorizedException('Wrong email')
