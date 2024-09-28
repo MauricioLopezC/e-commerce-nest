@@ -20,8 +20,8 @@ export class ProductSkusController {
 
   @PublicRoute()
   @Get()
-  findAll(@Param('productId', ParseIntPipe) productId: number,) {
-    return this.productSkusService.findAll(productId);
+  async findAll(@Param('productId', ParseIntPipe) productId: number,) {
+    return await this.productSkusService.findAll(productId);
   }
 
   @PublicRoute()
