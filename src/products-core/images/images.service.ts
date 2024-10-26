@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { NotExistError } from 'src/common/errors/not-exist-error';
+import { CloudinaryResponse } from '../cloudinary/cloudinary-response';
 
 @Injectable()
 export class ImagesService {
@@ -55,7 +56,8 @@ export class ImagesService {
     return response
   }
 
-  async deleteAndDestroy(id: number) {
+  async deleteAndDestroy(id: number): Promise<CloudinaryResponse> {
+    //NOTE: can use database transaction here
     const image = await this.prisma.image.findUnique({
       where: {
         id

@@ -47,7 +47,7 @@ export class CartItemsService {
       return newCartItem
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
-        //NOTE: we could include that when product is already included in cart, increment
+        //NOTE: we could include that when the product is already included in cart, increment
         //the stock istead throew error
         throw new AlreadyIncludedError("The product is already included")
       }
@@ -58,6 +58,13 @@ export class CartItemsService {
     const cartItems = await this.prisma.cartItem.findMany({
       where: {
         cartId
+      },
+      include: {
+        product: {
+          include: {
+            images: true
+          }
+        }
       }
     })
     return cartItems
