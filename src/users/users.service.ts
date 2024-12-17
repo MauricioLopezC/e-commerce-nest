@@ -3,6 +3,7 @@ import { CreateUserDto } from './dtos/CreateUserDto';
 import { UpdateUserDto } from './dtos/UpdateUserDto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
+import { ListAllUsersDto } from './dtos/list-all-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +17,11 @@ export class UsersService {
     return createdUser
   }
 
-  async findAll() {
+  async findAll(query: ListAllUsersDto) {
+    const limit = query.limit
+    const page = query.page
+    const offset = (page - 1) * limit //for pagination offset
+
     const users = await this.prisma.user.findMany({
       select: {
         id: true,
@@ -25,17 +30,43 @@ export class UsersService {
         email: true,
         role: true,
         createdAt: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+        order: {
+          include: {
+            orderItems: true
+          }
+        },
+      },
+      take: limit,
+      skip: offset
     })
-    return users
+
+    const aggregate = await this.prisma.user.aggregate({
+      _count: true
+    })
+
+    return {
+      users,
+      aggregate
+    }
   }
 
-  async findOne(id: number): Promise<User> {
+  async findOne(id: number) {
     return await this.prisma.user.findUnique({
       where: {
         id: id
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        //cart: true
       }
+
     })
   }
 
@@ -57,10 +88,13 @@ export class UsersService {
   }
 
   async remove(id: number): Promise<User> {
-    return this.prisma.user.delete({
+    console.log("USER ID = ", id)
+    const deletedUser = await this.prisma.user.delete({
       where: {
-        id: id
+        id
       }
     })
+    console.log("DELETED ", deletedUser)
+    return deletedUser
   }
 }

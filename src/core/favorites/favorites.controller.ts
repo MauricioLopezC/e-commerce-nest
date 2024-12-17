@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Query } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { OwnGuard } from '../guards/own.guard';
+import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
 
 @UseGuards(OwnGuard)
 @Controller('users/:userId/favorites')
@@ -15,8 +16,8 @@ export class FavoritesController {
   }
 
   @Get()
-  findAll(@Param('userId', ParseIntPipe) userId: number) {
-    return this.favoritesService.findAll(userId);
+  findAll(@Param('userId', ParseIntPipe) userId: number, @Query() query: ListAllFavoritesDto) {
+    return this.favoritesService.findAll(userId, query);
   }
 
   @Get(':id')
@@ -32,6 +33,12 @@ export class FavoritesController {
   ) {
     return this.favoritesService.update(userId, id, updateFavoriteDto);
   }
+
+  // @Delete()
+  // removeWithOutUserId(@Param('userId', ParseIntPipe) userId: number) {
+  //   //TODO: move this one method to another controller
+  //   return this.favoritesService.removeByProductId(userId, ) 
+  // }
 
   @Delete(':id')
   remove(@Param('userId', ParseIntPipe) userId: number, @Param('id', ParseIntPipe) id: number) {

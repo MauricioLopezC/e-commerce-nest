@@ -8,9 +8,6 @@ import { ProductSku } from '@prisma/client';
 export class ProductSkusService {
   //TODO: custom error handling in create, update and remove
   //TODO: Add array image attribute in UpdateProductSkusDto
-  //and add simple imageService, this way we can manage upload images easy
-  //NOTE: we will use a external service to manage images, like cloudinary
-  //integrate could be hard, so we will integrate it at the end
   constructor(private prisma: PrismaService) { }
 
   async create(productId: number, createProductSkusDto: CreateProductSkusDto): Promise<ProductSku> {
@@ -70,5 +67,9 @@ export class ProductSkusService {
       }
     })
     return deletedSku
+  }
+
+  async batchCreate() {
+    //TODO: implement
   }
 }

@@ -3,6 +3,7 @@ import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Favorite } from '@prisma/client';
+import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
 
 @Injectable()
 export class FavoritesService {
@@ -24,13 +25,34 @@ export class FavoritesService {
     }
   }
 
-  async findAll(userId: number) {
+  async findAll(userId: number, query: ListAllFavoritesDto) {
+    const limit = query.limit
+    const page = query.page
+    const offset = (page - 1) * limit //for pagination offset
+
     const favorites = await this.prisma.favorite.findMany({
+      skip: offset,
+      take: limit,
       where: {
         userId: userId
+      },
+      include: {
+        product: {
+          include: {
+            images: true
+          }
+        }
       }
     })
-    return favorites
+    const aggregate = await this.prisma.favorite.aggregate({
+      //where: query,
+      _count: true
+    })
+
+    return {
+      favorites,
+      aggregate
+    }
   }
 
   async findOne(userId: number, favoriteId: number): Promise<Favorite> {
@@ -67,4 +89,20 @@ export class FavoritesService {
     })
     return deleted
   }
+
+  async removeByProductId(userId: number, productId: number) {
+    //NOTE: way to use unique constraint
+    const deleted = await this.prisma.favorite.delete({
+      where: {
+        productId_userId: {
+          productId,
+          userId
+        }
+      }
+    })
+    return deleted
+
+  }
+
+
 }

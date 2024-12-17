@@ -11,7 +11,7 @@ export class CartController {
 
   @Post()
   create(@Param('userId', ParseIntPipe) userId: number, @Body() createCartDto: CreateCartDto) {
-    return this.cartService.create(userId, createCartDto);
+    return this.cartService.create(userId);
   }
 
   @Get()
