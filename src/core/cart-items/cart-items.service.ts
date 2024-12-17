@@ -48,7 +48,7 @@ export class CartItemsService {
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
         //NOTE: we could include that when the product is already included in cart, increment
-        //the stock istead throew error
+        //the stock instead throw error
         throw new AlreadyIncludedError("The product is already included")
       }
     }
@@ -64,7 +64,8 @@ export class CartItemsService {
           include: {
             images: true
           }
-        }
+        },
+        productSku: true
       }
     })
     return cartItems

@@ -12,8 +12,6 @@ import { PrismaClientExceptionFilter } from 'src/common/filters/prisma-client-ex
 @Controller('products')
 export class ProductsController {
   //TODO: error control like cartItemController
-  //TODO: The product must include al least one image for
-  //presenting on a grid, add that option in ListAllProductDto
   //NOTE: PrismaClientExceptionFilter catch all PrismaClientKnownRequestError
   //exceptions
   constructor(private readonly productsService: ProductsService) { }

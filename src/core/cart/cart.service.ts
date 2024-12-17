@@ -6,7 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class CartService {
   constructor(private prisma: PrismaService) { }
 
-  async create(userId: number, createCartDto: CreateCartDto) {
+  async create(userId: number) {
     const cart = await this.prisma.cart.create({
       data: { userId }
     })
@@ -14,12 +14,14 @@ export class CartService {
   }
 
   async findAll(userId: number) {
-    const carts = await this.prisma.cart.findMany({
+    const carts = await this.prisma.cart.findUnique({
       where: {
         userId
+      },
+      include: {
+        CartItem: true,
       }
     })
     return carts
   }
-
 }

@@ -21,36 +21,42 @@ export class ProductsService {
     return newProduct
   }
 
-  async findAll(filters: ListAllProductDto): Promise<Product[]> {
-    //TODO: include al least one image per Product
-    //using include in findMay or selecting one
-    //with prisma.image.findMany() with take
+  async findAll(filters: ListAllProductDto) {
+    //
+    //TODO: findAllUsersDto
     const limit = filters.limit
     const page = filters.page
+    const orderBy = filters.orderBy
     console.log("Limit and page: ", limit, page)
     console.log(typeof limit)
 
     const offset = (page - 1) * limit //for pagination offset
     delete filters.limit
     delete filters.page
+    delete filters.orderBy
     console.log("filters -->", filters)
 
-
-    //TODO: its not possible in primsa find firt inside an include
-    //this can be usefull for take only main picture
-    //add a raw sql query instead
-    return await this.prisma.product.findMany({
+    const products = await this.prisma.product.findMany({
       skip: offset,
       take: limit,
       where: filters,
       include: {
-        images: true
+        images: true,
       }
     })
+
+    const aggregate = await this.prisma.product.aggregate({
+      where: filters,
+      _count: true
+    })
+
+    return {
+      products,
+      aggregate
+    }
   }
 
   async findOne(id: number): Promise<Product> {
-    //TODO: include al least one image per Product
     const product = await this.prisma.product.findUnique({
       where: {
         id

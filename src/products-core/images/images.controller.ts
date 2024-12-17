@@ -40,10 +40,17 @@ export class ImagesController {
       body.productId,
       body.productSkuId
     )
+    //TODO: return json inseted text
+    //be careful this is a breaking change
     return result.secure_url
   }
 
   //TODO: Multiple file upload
+  @Post('/batch')
+  @Roles(Role.Admin)
+  async batchCreateAndUpload() {
+
+  }
 
   @Delete(':id')
   @Roles(Role.Admin)

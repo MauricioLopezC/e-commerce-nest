@@ -9,6 +9,7 @@ import { jwtConstants } from './login/constants';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './guards/auth.guard';
 import { RolesGuard } from './guards/roles.guard';
+import { CartModule } from 'src/core/cart/cart.module';
 
 @Module({
   providers: [
@@ -30,7 +31,8 @@ import { RolesGuard } from './guards/roles.guard';
       global: true,
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '1d' }
-    })
+    }),
+    CartModule
   ],
   controllers: [AuthController]
 })
