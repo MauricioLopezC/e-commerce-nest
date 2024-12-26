@@ -21,7 +21,10 @@ export class FavoritesController {
   }
 
   @Get(':id')
-  findOne(@Param('userId', ParseIntPipe) userId: number, @Param('id', ParseIntPipe) id: number) {
+  findOne(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
     return this.favoritesService.findOne(userId, id);
   }
 

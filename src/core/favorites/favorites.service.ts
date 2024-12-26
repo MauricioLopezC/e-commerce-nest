@@ -26,14 +26,18 @@ export class FavoritesService {
   }
 
   async findAll(userId: number, query: ListAllFavoritesDto) {
+    //TODO: aply filters or query to aggregate too
     const limit = query.limit
     const page = query.page
     const offset = (page - 1) * limit //for pagination offset
+    delete query.page
+    delete query.limit
 
     const favorites = await this.prisma.favorite.findMany({
       skip: offset,
       take: limit,
       where: {
+        ...query,
         userId: userId
       },
       include: {
@@ -65,8 +69,6 @@ export class FavoritesService {
   }
 
   async update(userId: number, productId: number, updateFavoriteDto: UpdateFavoriteDto) {
-    //TODO: evitar que se agregen productsIds de productos que no existan
-    //
     //TODO: add Custom error that indicate favorite does not exist
     return await this.prisma.favorite.update({
       where: {
@@ -80,7 +82,7 @@ export class FavoritesService {
   }
 
   async remove(userId: number, id: number) {
-    //TODO: add Custom error that indicate favorite does not exist 
+    //TODO: add Custom error that indicate favorite does not exist
     const deleted = await this.prisma.favorite.delete({
       where: {
         id,

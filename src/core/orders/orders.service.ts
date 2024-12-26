@@ -3,9 +3,8 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CartItem, Order, Product } from '@prisma/client';
-import { Payment } from '@prisma/client';
 import { ResendService } from 'nestjs-resend';
-import { ListAllOrdersDto } from './dto/list-all-orders.dto';
+import { NotFoundError } from 'src/common/errors/not-found-error';
 
 @Injectable()
 export class OrdersService {
@@ -15,13 +14,12 @@ export class OrdersService {
   ) { }
 
   async create(userId: number, createOrderDto: CreateOrderDto): Promise<Order> {
-    //TODO: check that userId exist
-
     const cart = await this.prisma.cart.findUnique({
       where: {
         userId
       }
     })
+    if (!cart) throw new NotFoundError(`cart not found`)
 
     const cartItems = await this.prisma.cartItem.findMany({
       where: {
@@ -66,12 +64,6 @@ export class OrdersService {
     })
 
     //delete cartItem
-    await this.prisma.cartItem.deleteMany({
-      where: {
-        cartId: cart.id
-      }
-    })
-
     if (order) {
       await this.prisma.cartItem.deleteMany({
         where: {
@@ -124,7 +116,7 @@ export class OrdersService {
     <ul>
     ${listItems}
     </ul>
-  `
+    `
 
     return await this.resendService.send({
       from: 'Acme <onboarding@resend.dev>',
@@ -161,91 +153,27 @@ export class OrdersService {
     return orders
   }
 
-
-  /**
-   * admin funtion used in orders-admin controller
-  */
-  async findAllOrders(query: ListAllOrdersDto) {
-    const limit = query.limit
-    const page = query.page
-    const offset = (page - 1) * limit //for pagination offset
-
-    const orders = await this.prisma.order.findMany({
-      take: limit,
-      skip: offset,
+  async findOne(id: number) {
+    const order = await this.prisma.order.findUnique({
+      where: {
+        id
+      },
       include: {
+        payment: true,
+        Shipping: true,
         orderItems: {
           include: {
             product: true,
             productSku: true,
           }
         },
-        payment: true,
-        Shipping: true,
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            role: true,
-            createdAt: true,
-            updatedAt: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
       }
-    })
-
-    const aggregate = await this.prisma.order.aggregate({
-      _sum: {
-        total: true
-      },
-      _count: true,
-      // where: {
-      //   status: 'COMPLETED'
-      // }
-    })
-
-    return {
-      orders,
-      aggregate,
-    }
+    });
+    return order
   }
 
-  async test() {
-    const prod = await this.prisma.orderItem.groupBy({
-      by: ['productId'],
-      _sum: {
-        quantity: true,
-      }
-    }) //product and total orders useful for top products
-
-    //obtener un producto con sus ventas totales
-
-    const product = await this.prisma.product.findMany({
-      include: {
-        images: true,
-        orderItems: true
-      }
-    })
-
-
-
-  }
-
-
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
-  }
-
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} order`;
-  }
+  // update(id: number, updateOrderDto: UpdateOrderDto) {
+  //   return `This action updates a #${id} order`;
+  // }
+  //
 }

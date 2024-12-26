@@ -17,4 +17,12 @@ export class ListAllFavoritesDto {
   @IsNotEmpty()
   @Transform(({ value }) => Number(value))
   page: number = 1;
-} 
+
+
+  @IsOptional()
+  @IsInt()
+  @IsNotEmpty()
+  @Transform(({ value }) => Number(value))
+  productId: number;
+}
+
