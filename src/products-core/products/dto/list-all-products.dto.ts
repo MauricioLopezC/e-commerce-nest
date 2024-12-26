@@ -1,6 +1,7 @@
 import { Transform } from "class-transformer";
 import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from "class-validator";
 export class ListAllProductDto {
+  //filters seccion
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -32,11 +33,12 @@ export class ListAllProductDto {
   @IsNotEmpty()
   sex: string;
 
+  //order secction
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   orderBy: string;
 
-  //TODO: agregar otro query param para decir que los productos vengan con sus productSKUs
-  //eso lo pedimos facil desde primsa include
+  //search secction
+
 }

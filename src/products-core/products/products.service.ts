@@ -12,6 +12,7 @@ export class ProductsService {
   //NOTE: all PrismaClientKnownRequestError could be manage by exception filter
   //and we can manage business errors here using custom errors
   //NOTE: consider add unique constraint to product.name
+  //
   constructor(private prisma: PrismaService) { }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -21,32 +22,40 @@ export class ProductsService {
     return newProduct
   }
 
-  async findAll(filters: ListAllProductDto) {
-    //
-    //TODO: findAllUsersDto
-    const limit = filters.limit
-    const page = filters.page
-    const orderBy = filters.orderBy
+  async findAll(query: ListAllProductDto) {
+    const limit = query.limit
+    const page = query.page
+    const orderBy = query.orderBy?.split(',') //creating orderby object
+      .map((param) => param.trim())
+      .map((param) => {
+        let sortOrder = param.charAt(0) === '-' ? 'desc' : 'asc';
+        let formatedParam = param.charAt(0) === '-' ? param.slice(1) : param;
+        return {
+          [formatedParam]: sortOrder
+        }
+      })
+
+    console.log('orderBy:', orderBy)
     console.log("Limit and page: ", limit, page)
-    console.log(typeof limit)
 
     const offset = (page - 1) * limit //for pagination offset
-    delete filters.limit
-    delete filters.page
-    delete filters.orderBy
-    console.log("filters -->", filters)
+    delete query.limit
+    delete query.page
+    delete query.orderBy
+    console.log("filters -->", query)
 
     const products = await this.prisma.product.findMany({
+      orderBy,
       skip: offset,
       take: limit,
-      where: filters,
+      where: query,
       include: {
         images: true,
       }
     })
 
     const aggregate = await this.prisma.product.aggregate({
-      where: filters,
+      where: query,
       _count: true
     })
 
