@@ -29,8 +29,8 @@ export class OrdersAdminController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(id, updateOrderDto);
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateOrderDto: UpdateOrderDto) {
+    return await this.ordersService.update(id, updateOrderDto);
   }
 
   // @Delete(':id')
