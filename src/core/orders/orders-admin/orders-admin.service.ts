@@ -3,7 +3,6 @@ import { ListAllOrdersDto } from '../dto/list-all-orders.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateOrderDto } from '../dto/update-order.dto';
 import { NotFoundError } from 'src/common/errors/not-found-error';
-import { CreateOrderDto } from '../dto/create-order.dto';
 
 @Injectable()
 export class OrdersAdminService {
@@ -11,13 +10,30 @@ export class OrdersAdminService {
   constructor(private readonly prisma: PrismaService) { }
 
   async findAllOrders(query: ListAllOrdersDto) {
+
+    const filters = {
+      status: query.status
+    }
+
     const limit = query.limit
     const page = query.page
-    const offset = (page - 1) * limit //for pagination offset
+    const offset = (page - 1) * limit
+
+    //creating prisma orderBy query object
+    const orderBy = query.orderBy?.map((param) => {
+      let sortOrder = param.charAt(0) === '-' ? 'desc' : 'asc';
+      let formatedParam = param.charAt(0) === '-' ? param.slice(1) : param;
+      return {
+        [formatedParam]: sortOrder
+      }
+    })
+    console.log(orderBy)
 
     const orders = await this.prisma.order.findMany({
       take: limit,
       skip: offset,
+      where: filters,
+      orderBy,
       include: {
         orderItems: {
           include: {
@@ -39,12 +55,10 @@ export class OrdersAdminService {
           }
         }
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
     })
 
     const aggregate = await this.prisma.order.aggregate({
+      where: filters,
       _sum: {
         total: true,
       },

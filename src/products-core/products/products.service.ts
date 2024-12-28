@@ -3,12 +3,12 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ListAllProductDto } from './dto/list-all-products.dto';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Product } from '@prisma/client';
 
 @Injectable()
 export class ProductsService {
   //TODO: error control like cartItemService
+  //TODO: change aggregate name to metaData
   //NOTE: all PrismaClientKnownRequestError could be manage by exception filter
   //and we can manage business errors here using custom errors
   //NOTE: consider add unique constraint to product.name
