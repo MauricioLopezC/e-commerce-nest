@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, Validate, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
+import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
 import { OrderStatus } from "../enums/order-status.enum";
 
 /**
@@ -42,6 +42,10 @@ export class ListAllOrdersDto {
   @IsNotEmpty()
   @IsEnum(OrderStatus)
   status: string
+
+  @IsString()
+  @IsOptional()
+  email: string //search for emails 
 
 
   //order secction

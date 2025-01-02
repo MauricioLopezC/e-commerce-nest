@@ -142,7 +142,9 @@ export class OrdersService {
       include: {
         orderItems: {
           include: {
-            product: true,
+            product: {
+              include: { images: true }
+            },
             productSku: true,
           }
         },
@@ -150,7 +152,17 @@ export class OrdersService {
         Shipping: true
       }
     })
-    return orders
+    const aggregate = await this.prisma.order.aggregate({
+      _sum: {
+        total: true,
+      },
+      _count: true,
+    })
+
+    return {
+      orders,
+      aggregate,
+    }
   }
 
   async findOne(id: number) {
