@@ -12,12 +12,18 @@ export class OrdersAdminService {
   async findAllOrders(query: ListAllOrdersDto) {
 
     const filters = {
-      status: query.status
+      status: query.status,
+      user: {
+        email: {
+          contains: query.email
+        }
+      }
     }
 
     const limit = query.limit
     const page = query.page
     const offset = (page - 1) * limit
+    //creating where query object
 
     //creating prisma orderBy query object
     const orderBy = query.orderBy?.map((param) => {
@@ -33,6 +39,12 @@ export class OrdersAdminService {
       take: limit,
       skip: offset,
       where: filters,
+      // where: {
+      //   createdAt: {
+      //     gte: new Date('2024/11/1'),
+      //     lte: new Date('2024/10/1')
+      //   }
+      // },
       orderBy,
       include: {
         orderItems: {

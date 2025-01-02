@@ -150,6 +150,9 @@ model OrderItem {
   productSku ProductSku @relation(fields: [productSkuId], references: [id], onDelete: Cascade)
 }
 
+//OrderItem price it is not redundant because the price of the products
+//can change while the price of the order has to remain fixed.
+
 model Payment {
   id        Int      @id @default(autoincrement())
   orderId   Int      @unique
