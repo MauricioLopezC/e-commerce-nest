@@ -16,6 +16,7 @@ export class OrdersController {
       return await this.ordersService.create(userId, createOrderDto);
     } catch (error) {
       if (error instanceof NotFoundError) throw new NotFoundException(error.message)
+      else { console.log((error)) }
     }
   }
 

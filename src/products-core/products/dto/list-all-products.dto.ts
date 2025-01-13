@@ -1,7 +1,7 @@
 import { Transform } from "class-transformer";
 import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from "class-validator";
 export class ListAllProductDto {
-  //filters seccion
+  //pagination secction
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -18,6 +18,7 @@ export class ListAllProductDto {
   @Transform(({ value }) => Number(value))
   page: number = 1;
 
+  //filters seccion
   @IsOptional()
   @IsString()
   @IsNotEmpty()
@@ -40,5 +41,4 @@ export class ListAllProductDto {
   orderBy: string;
 
   //search secction
-
 }

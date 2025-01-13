@@ -1,19 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CartItem, Order, Product } from '@prisma/client';
+import { CartItem, Order, Prisma, Product } from '@prisma/client';
 import { ResendService } from 'nestjs-resend';
 import { NotFoundError } from 'src/common/errors/not-found-error';
+import { DiscountsService } from '../promotions/discounts/discounts.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     private prisma: PrismaService,
-    private resendService: ResendService
+    private resendService: ResendService,
+    private discountsService: DiscountsService
   ) { }
 
-  async create(userId: number, createOrderDto: CreateOrderDto): Promise<Order> {
+  async create(userId: number, createOrderDto: CreateOrderDto) {
     const cart = await this.prisma.cart.findUnique({
       where: {
         userId
@@ -26,14 +27,20 @@ export class OrdersService {
         cartId: cart.id
       },
       include: {
-        product: true
+        product: {
+          include: { categories: true }
+        }
       }
-
     })
 
     const total = cartItems.reduce((previous, current) => (
       previous + current.product.price * current.quantity
     ), 0)
+
+    const { discountAmount, finalTotal } = await this.discountsService.calculateDiscounts(cartItems, total)
+    console.log(discountAmount, total, finalTotal)
+
+    //ahora vamos a calcular los descuentos automaticos
 
     const orderItems = cartItems.map((cartItem) => (
       {
@@ -44,66 +51,68 @@ export class OrdersService {
       }
     ))
 
-    const order = await this.prisma.order.create({
-      data: {
-        userId,
-        total,
-        payment: {
-          create: createOrderDto.payment
-        },
-        Shipping: {
-          create: createOrderDto.shipping
-        },
-        orderItems: {
-          create: orderItems
-        }
-      },
-      include: {
-        orderItems: true
-      }
-    })
+    // const order = await this.prisma.order.create({
+    //   data: {
+    //     userId,
+    //     total,
+    //     finalToal: 0,
+    //     payment: {
+    //       create: createOrderDto.payment
+    //     },
+    //     shipping: {
+    //       create: createOrderDto.shipping
+    //     },
+    //     orderItems: {
+    //       create: orderItems
+    //     }
+    //   },
+    //   include: {
+    //     orderItems: true
+    //   }
+    // })
 
-    //delete cartItem
-    if (order) {
-      await this.prisma.cartItem.deleteMany({
-        where: {
-          cartId: cart.id
-        }
-      })
-
-      const email = await this.sendEmail(createOrderDto.email, cartItems)
-      console.log("EMAIL", email)
-
-      order.orderItems.forEach(async (orderItem) => {
-        const updatedPsku = await this.prisma.productSku.update({
-          where: {
-            id: orderItem.productSkuId
-          },
-          data: {
-            quantity: {
-              decrement: orderItem.quantity
-            }
-          }
-        })
-        console.log(updatedPsku)
-        const updatedProduct = await this.prisma.product.update({
-          where: {
-            id: orderItem.productId
-          },
-          data: {
-            unitsOnOrder: {
-              increment: orderItem.quantity
-            },
-            totalCollected: {
-              increment: orderItem.price * orderItem.quantity
-            }
-          }
-        })
-        console.log(updatedProduct)
-      })
-    }
-
-    return order;
+    // if (order) {
+    //   //delete cartItem
+    //   await this.prisma.cartItem.deleteMany({
+    //     where: {
+    //       cartId: cart.id
+    //     }
+    //   })
+    //
+    //   const email = await this.sendEmail(createOrderDto.email, cartItems)
+    //   console.log("EMAIL", email)
+    //
+    //   order.orderItems.forEach(async (orderItem) => {
+    //     const updatedPsku = await this.prisma.productSku.update({
+    //       where: {
+    //         id: orderItem.productSkuId
+    //       },
+    //       data: {
+    //         quantity: {
+    //           decrement: orderItem.quantity
+    //         }
+    //       }
+    //     })
+    //     console.log(updatedPsku)
+    //
+    //     const updatedProduct = await this.prisma.product.update({
+    //       where: {
+    //         id: orderItem.productId
+    //       },
+    //       data: {
+    //         unitsOnOrder: {
+    //           increment: orderItem.quantity
+    //         },
+    //         totalCollected: {
+    //           increment: orderItem.price * orderItem.quantity
+    //         }
+    //       }
+    //     })
+    //     console.log(updatedProduct)
+    //   })
+    // }
+    //
+    // return order;
   }
 
   async sendEmail(email: string, cartItems: Array<CartItem & { product: Product }>) {
@@ -149,7 +158,7 @@ export class OrdersService {
           }
         },
         payment: true,
-        Shipping: true
+        shipping: true
       }
     })
     const aggregate = await this.prisma.order.aggregate({
@@ -172,7 +181,7 @@ export class OrdersService {
       },
       include: {
         payment: true,
-        Shipping: true,
+        shipping: true,
         orderItems: {
           include: {
             product: true,

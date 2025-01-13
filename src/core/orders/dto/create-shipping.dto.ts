@@ -14,5 +14,5 @@ export class CreateShippingDto {
 
   @IsString()
   @IsNotEmpty()
-  adress: string;
+  address: string;
 }
