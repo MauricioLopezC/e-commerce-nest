@@ -25,6 +25,7 @@ export class ProductsService {
   async findAll(query: ListAllProductDto) {
     const limit = query.limit
     const page = query.page
+    //TODO: check orderBy is valid field
     const orderBy = query.orderBy?.split(',') //creating orderby object
       .map((param) => param.trim())
       .map((param) => {

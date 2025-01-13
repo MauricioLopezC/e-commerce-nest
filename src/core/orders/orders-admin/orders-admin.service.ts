@@ -54,7 +54,7 @@ export class OrdersAdminService {
           }
         },
         payment: true,
-        Shipping: true,
+        shipping: true,
         user: {
           select: {
             id: true,
