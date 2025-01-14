@@ -135,15 +135,14 @@ model Favorite {
 }
 
 model Order {
-  id          Int           @id @default(autoincrement())
-  userId      Int
-  status      String        @default("IN_PROGRESS")
-  total       Float
-  finalToal   Float
-  orderItems  OrderItem[]
-  payment     Payment?
-  shipping    Shipping?
-  discuntCode DiscountCode?
+  id         Int         @id @default(autoincrement())
+  userId     Int
+  status     String      @default("IN_PROGRESS")
+  total      Float
+  finalToal  Float
+  orderItems OrderItem[]
+  payment    Payment?
+  shipping   Shipping?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -215,19 +214,16 @@ model Discount {
 
 //only one DiscountCode per Order
 model DiscountCode {
-  id            Int      @id @default(autoincrement())
-  code          String   @unique // Código único del cupón
-  discountType  String // Tipo de descuento: porcentaje o monto fijo
-  value         Float // Valor del descuento (porcentaje o monto fijo)
-  maxUses       Int? // Número máximo de usos del cupón
-  currentUses   Int      @default(0) // Usos actuales del cupón
-  startDate     DateTime // Fecha de inicio del cupón
-  endDate       DateTime // Fecha de expiración del cupón
-  isActive      Boolean  @default(true) // Indica si el cupón está activo
-  orderId       Int      @unique
-  minOrderValue Float? // Valor mínimo de la orden para aplicar el cupón
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  order Order @relation(fields: [orderId], references: [id])
+  id             Int      @id @default(autoincrement())
+  code           String   @unique // Código único del cupón
+  discountType   String // Tipo de descuento: porcentaje o monto fijo
+  value          Float // Valor del descuento (porcentaje o monto fijo)
+  maxUses        Int? // Número máximo de usos del cupón
+  currentUses    Int      @default(0) // Usos actuales del cupón
+  startDate      DateTime // Fecha de inicio del cupón
+  endDate        DateTime // Fecha de expiración del cupón
+  isActive       Boolean  @default(true) // Indica si el cupón está activo
+  orderThreshold Float? // Valor mínimo de la orden para aplicar el cupón
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
