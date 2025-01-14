@@ -1,21 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CartItemsWithProductAndCategories, DiscountWithProductsAndCategories } from './types/discount-types';
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import { Discount, Prisma } from '@prisma/client';
-import { DiscountType, UpdateDiscountDto } from './dto/update-discount.dto';
+import { ApplicableTo, DiscountType, UpdateDiscountDto } from './dto/update-discount.dto';
 import { DiscountApplicationError } from '../errors/discount-application-error';
 import { ConnectOrDisconnectCategoriesDto, ConnectOrDisconectProductsDto } from './dto/connect-relations.dto';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { ValidationError } from 'src/common/errors/validation-error';
-import { connect } from 'tls';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { NotAllowedError } from 'src/common/errors/not-allowed-error';
 
 @Injectable()
 export class DiscountsService {
-  //TODO: create the relations
-  //discount-product
-  //discount-categories
   constructor(
     private prisma: PrismaService,
   ) { }
@@ -148,11 +145,17 @@ export class DiscountsService {
   }
 
   async connectProducts(id: number, connectProductDto: ConnectOrDisconectProductsDto) {
-    const productsToConnect = connectProductDto.productIds
-      .map((productId) => ({ id: productId }))
+    const discount = await this.findOne(id)
+    if (!discount) throw new NotFoundError('discount not found')
+    if (discount.applicableTo === ApplicableTo.GENERAL || discount.applicableTo === ApplicableTo.CATEGORY) {
+      throw new NotAllowedError("You cannot connect products to a discount that is applicable generally or to categories.")
+    }
 
     try {
-      const discount = await this.prisma.discount.update({
+      const productsToConnect = connectProductDto.productIds
+        .map((productId) => ({ id: productId }))
+
+      const updatedDiscount = await this.prisma.discount.update({
         where: { id },
         data: {
           products: {
@@ -160,7 +163,7 @@ export class DiscountsService {
           }
         }
       })
-      return discount
+      return updatedDiscount
     } catch (error) {
       console.log(error)
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2018') {
@@ -170,6 +173,12 @@ export class DiscountsService {
   }
 
   async connectCategories(id: number, connectCategoryDto: ConnectOrDisconnectCategoriesDto) {
+    const discount = await this.findOne(id)
+    if (!discount) throw new NotFoundError('discount not found')
+    if (discount.applicableTo === ApplicableTo.GENERAL || discount.applicableTo === ApplicableTo.PRODUCT) {
+      throw new NotAllowedError("You cannot connect categories to a discount that is applicable generally or to products.")
+    }
+
     const categoriesToConnect = connectCategoryDto.categoryIds
       .map((categoryId) => ({ id: categoryId }))
 
@@ -251,13 +260,12 @@ export class DiscountsService {
         categories: true
       }
     })
-    //discounts.forEach((discount) => console.log(discount, discount.categories))
     //applying general discuounts
     //We are accumulating the amount that we have to discount
     const generalDiscounts = discounts.filter((discount) => discount.applicableTo === 'GENERAL')
     for (const discount of generalDiscounts) {
-      if (discount.orderThreshold && discount.orderThreshold < total) return
-      if (discount.maxUses && discount.maxUses < discount.currentUses) return
+      if (discount.orderThreshold && discount.orderThreshold < total) continue
+      if (discount.maxUses && discount.maxUses < discount.currentUses) continue
 
       if (discount.discountType === 'PERCENTAGE') {
         discountAmount += (total / 100) * discount.value
@@ -274,8 +282,9 @@ export class DiscountsService {
       ))
       //applying all applicable discount for current product, if that discount exists
       for (const discount of applicableDiscounts) {
-        if (discount.orderThreshold && discount.orderThreshold < total) return
-        if (discount.maxUses && discount.maxUses < discount.currentUses) return
+        if (discount.orderThreshold && discount.orderThreshold < total) continue
+        if (discount.maxUses && discount.maxUses < discount.currentUses) continue
+
 
         if (discount.discountType === 'PERCENTAGE') {
           discountAmount += (cartItem.product.price / 100) * discount.value
