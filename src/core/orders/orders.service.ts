@@ -38,9 +38,6 @@ export class OrdersService {
     ), 0)
 
     const { discountAmount, finalTotal } = await this.discountsService.calculateDiscounts(cartItems, total)
-    console.log(discountAmount, total, finalTotal)
-
-    //ahora vamos a calcular los descuentos automaticos
 
     const orderItems = cartItems.map((cartItem) => (
       {
@@ -51,68 +48,73 @@ export class OrdersService {
       }
     ))
 
-    // const order = await this.prisma.order.create({
-    //   data: {
-    //     userId,
-    //     total,
-    //     finalToal: 0,
-    //     payment: {
-    //       create: createOrderDto.payment
-    //     },
-    //     shipping: {
-    //       create: createOrderDto.shipping
-    //     },
-    //     orderItems: {
-    //       create: orderItems
-    //     }
-    //   },
-    //   include: {
-    //     orderItems: true
-    //   }
-    // })
+    return this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.create({
+        data: {
+          userId,
+          total,
+          finalTotal,
+          payment: {
+            create: createOrderDto.payment
+          },
+          shipping: {
+            create: createOrderDto.shipping
+          },
+          orderItems: {
+            create: orderItems
+          },
+          discountAmount
+        },
+        include: {
+          orderItems: true
+        }
+      })
 
-    // if (order) {
-    //   //delete cartItem
-    //   await this.prisma.cartItem.deleteMany({
-    //     where: {
-    //       cartId: cart.id
-    //     }
-    //   })
-    //
-    //   const email = await this.sendEmail(createOrderDto.email, cartItems)
-    //   console.log("EMAIL", email)
-    //
-    //   order.orderItems.forEach(async (orderItem) => {
-    //     const updatedPsku = await this.prisma.productSku.update({
-    //       where: {
-    //         id: orderItem.productSkuId
-    //       },
-    //       data: {
-    //         quantity: {
-    //           decrement: orderItem.quantity
-    //         }
-    //       }
-    //     })
-    //     console.log(updatedPsku)
-    //
-    //     const updatedProduct = await this.prisma.product.update({
-    //       where: {
-    //         id: orderItem.productId
-    //       },
-    //       data: {
-    //         unitsOnOrder: {
-    //           increment: orderItem.quantity
-    //         },
-    //         totalCollected: {
-    //           increment: orderItem.price * orderItem.quantity
-    //         }
-    //       }
-    //     })
-    //     console.log(updatedProduct)
-    //   })
-    // }
-    //
-    // return order;
+      // const email = await this.sendEmail(createOrderDto.email, cartItems)
+      // console.log("EMAIL", email)
+
+      await tx.cartItem.deleteMany({
+        where: {
+          cartId: cart.id
+        }
+      })
+
+      const stockUpdates = order.orderItems.map((orderItem) => {
+        return tx.productSku.update({
+          where: {
+            id: orderItem.productSkuId
+          },
+          data: {
+            quantity: {
+              decrement: orderItem.quantity
+            }
+          }
+        })
+
+      })
+      await Promise.all(stockUpdates)
+
+      const productUpdates = order.orderItems.map((orderItem) => {
+        return tx.product.update({
+          where: {
+            id: orderItem.productId,
+          },
+          data: {
+            unitsOnOrder: {
+              increment: orderItem.quantity
+            },
+            totalCollected: {
+              increment: orderItem.price * orderItem.quantity
+            }
+          }
+        })
+      })
+
+      await Promise.all(productUpdates)
+      return order
+    })
+
+
   }
 
   async sendEmail(email: string, cartItems: Array<CartItem & { product: Product }>) {
