@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, InternalServerErrorException, MethodNotAllowedException, NotFoundException, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, MethodNotAllowedException, NotFoundException, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { DiscountsService } from './discounts.service';
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import { Role } from 'src/auth/enums/role.enum';
@@ -61,6 +61,7 @@ export class DiscountsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() connectProductDto: ConnectOrDisconectProductsDto
   ) {
+    console.log(connectProductDto)
     try {
       return await this.discountsService.connectProducts(id, connectProductDto)
     } catch (error) {
@@ -78,9 +79,9 @@ export class DiscountsController {
     try {
       return await this.discountsService.connectCategories(id, connectCateogoriesDto)
     } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw new NotFoundException(error.message)
-      }
+      if (error instanceof NotFoundError) throw new NotFoundException(error.message)
+
+      if (error instanceof NotAllowedError) throw new MethodNotAllowedException(error.message)
     }
   }
 

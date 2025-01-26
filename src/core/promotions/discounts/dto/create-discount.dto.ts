@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer"
-import { IsArray, IsBoolean, IsDate, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength } from "class-validator"
+import { IsArray, IsBoolean, IsDate, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min } from "class-validator"
 
 enum DiscountType {
   PERCENTAGE = 'PERCENTAGE',
@@ -45,9 +45,10 @@ export class CreateDiscountDto {
   @IsEnum(ApplicableTo)
   applicableTo: string
 
+  //TODO: instead optional, use 0 value
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
-  @IsPositive()
+  @Min(0)
   orderThreshold: number
 
   @IsOptional()

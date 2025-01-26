@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ListAllProductDto } from './dto/list-all-products.dto';
-import { Product } from '@prisma/client';
+import { Prisma, Product } from '@prisma/client';
+import { ConnectCategoriesDto } from './dto/connect-categories.dto';
 
 @Injectable()
 export class ProductsService {
@@ -16,8 +17,15 @@ export class ProductsService {
   constructor(private prisma: PrismaService) { }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
+
+    const categoriesIds = createProductDto.categories.map((categoryId) => ({ id: categoryId }))
+    const data: Prisma.ProductCreateInput = { ...createProductDto, categories: { connect: [...categoriesIds] } }
+
     const newProduct = await this.prisma.product.create({
-      data: createProductDto
+      data,
+      include: {
+        categories: true
+      }
     })
     return newProduct
   }
@@ -97,4 +105,45 @@ export class ProductsService {
     })
     return deletedProduct
   }
+
+  async connectCategories(id: number, connectCategoriesDto: ConnectCategoriesDto) {
+    const categoryIds = connectCategoriesDto.categoryIds.map((categoryId) => ({ id: categoryId }))
+    try {
+      const product = await this.prisma.product.update({
+        where: { id },
+        data: {
+          categories: {
+            connect: categoryIds
+          }
+        },
+        include: {
+          categories: true
+        }
+      })
+      return product
+    } catch (error) {
+      throw new NotFoundException('some or all categories not found')
+    }
+  }
+
+  async disconnectCategories(id: number, connectCategoriesDto: ConnectCategoriesDto) {
+    const categoryIds = connectCategoriesDto.categoryIds.map((categoryId) => ({ id: categoryId }))
+    try {
+      const product = await this.prisma.product.update({
+        where: { id },
+        data: {
+          categories: {
+            disconnect: categoryIds
+          }
+        },
+        include: {
+          categories: true
+        }
+      })
+      return product
+    } catch (error) {
+      throw new NotFoundException('some or all categories not found')
+    }
+  }
+
 }

@@ -81,6 +81,13 @@ export class DiscountsService {
       throw new ValidationError('End date must be greater than the Start Date')
     }
 
+    if (
+      creatediscountDto.discountType === DiscountType.PERCENTAGE
+      && creatediscountDto.value > 100
+    ) {
+      throw new ValidationError('Only percentages less than 100% are allowed.')
+    }
+
     const { products, categories, ...data } = creatediscountDto
     let connectedProducts = creatediscountDto.products?.map((productId) => (
       { id: productId }
@@ -161,6 +168,9 @@ export class DiscountsService {
           products: {
             connect: productsToConnect
           }
+        },
+        include: {
+          products: true
         }
       })
       return updatedDiscount
@@ -189,6 +199,9 @@ export class DiscountsService {
           categories: {
             connect: categoriesToConnect
           }
+        },
+        include: {
+          categories: true
         }
       })
       return discount
@@ -248,6 +261,7 @@ export class DiscountsService {
     cartItems: CartItemsWithProductAndCategories[],
     total: number
   ) {
+    const appliedDicounts: { id: number, discountAmount: number }[] = []
     let discountAmount = 0;
     const now = new Date()
     const discounts = await this.prisma.discount.findMany({
@@ -260,19 +274,22 @@ export class DiscountsService {
         categories: true
       }
     })
-    //applying general discuounts
-    //We are accumulating the amount that we have to discount
+    //applying general discuounts first because they apply only once per order
     const generalDiscounts = discounts.filter((discount) => discount.applicableTo === 'GENERAL')
     for (const discount of generalDiscounts) {
-      if (discount.orderThreshold && discount.orderThreshold < total) continue
+      if (discount.orderThreshold && discount.orderThreshold > total) continue
       if (discount.maxUses && discount.maxUses < discount.currentUses) continue
+      let oneDiscountAmount: number
 
       if (discount.discountType === 'PERCENTAGE') {
-        discountAmount += (total / 100) * discount.value
+        oneDiscountAmount = (total / 100) * discount.value
+        discountAmount += oneDiscountAmount
       } else {
-        discountAmount += discount.value
+        oneDiscountAmount = discount.value
+        discountAmount += oneDiscountAmount
       }
       this.incrementUsage(discount.id)
+      appliedDicounts.push({ id: discount.id, discountAmount: oneDiscountAmount })
     }
 
     //We apply the other applicable discounts if there are any
@@ -282,28 +299,34 @@ export class DiscountsService {
       ))
       //applying all applicable discount for current product, if that discount exists
       for (const discount of applicableDiscounts) {
-        if (discount.orderThreshold && discount.orderThreshold < total) continue
+        if (discount.orderThreshold && discount.orderThreshold > total) continue
         if (discount.maxUses && discount.maxUses < discount.currentUses) continue
+        let oneDiscountAmount: number
 
 
         if (discount.discountType === 'PERCENTAGE') {
-          discountAmount += (cartItem.product.price / 100) * discount.value
+          oneDiscountAmount = (cartItem.product.price / 100) * discount.value
+          discountAmount += oneDiscountAmount
+
         } else {
-          discountAmount += discount.value
+          oneDiscountAmount = discount.value
+          discountAmount += oneDiscountAmount
         }
         this.incrementUsage(discount.id)
+        appliedDicounts.push({ id: discount.id, discountAmount: oneDiscountAmount })
       }
     }
 
     discountAmount = Math.min(discountAmount, total)
     return {
+      appliedDicounts,
       discountAmount,
       finalTotal: total - discountAmount
     }
   }
 
-  private incrementUsage(orderId: number) {
-    this.prisma.discount.update({
+  private async incrementUsage(orderId: number) {
+    await this.prisma.discount.update({
       where: {
         id: orderId
       },

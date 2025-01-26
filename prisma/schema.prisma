@@ -15,7 +15,7 @@ model Product {
   name           String
   price          Float
   description    String
-  category       String
+  category       String   @default("")
   sex            String
   unitsOnOrder   Float    @default(0)
   totalCollected Float    @default(0)
@@ -100,7 +100,6 @@ model Cart {
   id        Int        @id @default(autoincrement())
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int        @unique //necesary for one to one relations
-  total     Float      @default(0)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   CartItem  CartItem[]
@@ -135,19 +134,21 @@ model Favorite {
 }
 
 model Order {
-  id         Int         @id @default(autoincrement())
-  userId     Int
-  status     String      @default("IN_PROGRESS")
-  total      Float
-  finalToal  Float
-  orderItems OrderItem[]
-  payment    Payment?
-  shipping   Shipping?
+  id             Int         @id @default(autoincrement())
+  userId         Int
+  status         String      @default("IN_PROGRESS")
+  total          Float
+  discountAmount Float       @default(0)
+  finalTotal     Float
+  orderItems     OrderItem[]
+  payment        Payment?
+  shipping       Shipping?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discounts DicountsOnOrders[]
 }
 
 model OrderItem {
@@ -208,6 +209,7 @@ model Discount {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  orders     DicountsOnOrders[]
   products   Product[]
   categories Category[]
 }
@@ -226,4 +228,16 @@ model DiscountCode {
   orderThreshold Float? // Valor mínimo de la orden para aplicar el cupón
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model DicountsOnOrders {
+  discountId     Int
+  discount       Discount @relation(fields: [discountId], references: [id])
+  orderId        Int
+  order          Order    @relation(fields: [orderId], references: [id])
+  appliedTimes   Int
+  discountAmount Float
+  assignedAt     DateTime @default(now())
+
+  @@id([discountId, orderId])
 }

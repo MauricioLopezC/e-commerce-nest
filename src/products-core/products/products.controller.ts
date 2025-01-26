@@ -7,6 +7,8 @@ import { PublicRoute } from 'src/auth/decorators/public-routes.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { PrismaClientExceptionFilter } from 'src/common/filters/prisma-client-exception/prisma-client-exception.filter';
+import { ConnectCategoriesDto } from './dto/connect-categories.dto';
+import { NotFoundError } from 'src/common/errors/not-found-error';
 
 @UseFilters(PrismaClientExceptionFilter)
 @Controller('products')
@@ -51,5 +53,30 @@ export class ProductsController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.productsService.remove(id);
+  }
+
+  @Roles(Role.Admin)
+  @Post(':id/categories')
+  async connectCategories(@Param('id', ParseIntPipe) id: number, @Body() connectCategoriesDto: ConnectCategoriesDto) {
+    try {
+      return await this.productsService.connectCategories(id, connectCategoriesDto)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw new NotFoundException(error.message)
+      }
+
+    }
+  }
+
+  @Roles(Role.Admin)
+  @Delete(':id/categories')
+  async disconnectCategories(@Param('id', ParseIntPipe) id: number, @Body() connectCategoriesDto: ConnectCategoriesDto) {
+    try {
+      return await this.productsService.disconnectCategories(id, connectCategoriesDto)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw new NotFoundException(error.message)
+      }
+    }
   }
 }
