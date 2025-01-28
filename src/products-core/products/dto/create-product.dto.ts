@@ -12,9 +12,6 @@ export class CreateProductDto {
   @IsNotEmpty()
   description: string;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // category: string;
 
   @IsArray()
   @IsNumber({}, { each: true })
