@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseFilters, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseFilters, NotFoundException, Put } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -64,7 +64,6 @@ export class ProductsController {
       if (error instanceof NotFoundError) {
         throw new NotFoundException(error.message)
       }
-
     }
   }
 
@@ -73,6 +72,18 @@ export class ProductsController {
   async disconnectCategories(@Param('id', ParseIntPipe) id: number, @Body() connectCategoriesDto: ConnectCategoriesDto) {
     try {
       return await this.productsService.disconnectCategories(id, connectCategoriesDto)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw new NotFoundException(error.message)
+      }
+    }
+  }
+
+  @Roles(Role.Admin)
+  @Put(':id/categories')
+  async replaceCategories(@Param('id', ParseIntPipe) id: number, @Body() connectCategoriesDto: ConnectCategoriesDto) {
+    try {
+      return await this.productsService.replaceCategories(id, connectCategoriesDto)
     } catch (error) {
       if (error instanceof NotFoundError) {
         throw new NotFoundException(error.message)

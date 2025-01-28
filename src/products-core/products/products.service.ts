@@ -60,6 +60,7 @@ export class ProductsService {
       where: query,
       include: {
         images: true,
+        categories: true
       }
     })
 
@@ -80,7 +81,8 @@ export class ProductsService {
         id
       },
       include: {
-        images: true
+        images: true,
+        categories: true
       }
     })
     return product
@@ -146,4 +148,23 @@ export class ProductsService {
     }
   }
 
+  async replaceCategories(id: number, connectCategoriesDto: ConnectCategoriesDto) {
+    const categoryIds = connectCategoriesDto.categoryIds.map((categoryId) => ({ id: categoryId }))
+    try {
+      const product = await this.prisma.product.update({
+        where: { id },
+        data: {
+          categories: {
+            set: categoryIds
+          }
+        },
+        include: {
+          categories: true
+        }
+      })
+      return product
+    } catch (error) {
+      throw new NotFoundException('some or all categories not found')
+    }
+  }
 }
