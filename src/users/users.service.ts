@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dtos/UpdateUserDto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
 import { ListAllUsersDto } from './dtos/list-all-users.dto';
+import { NotFoundError } from 'src/common/errors/not-found-error';
 
 @Injectable()
 export class UsersService {
@@ -28,6 +29,8 @@ export class UsersService {
         firstName: true,
         lastName: true,
         email: true,
+        isBanned: true,
+        profileImage: true,
         role: true,
         createdAt: true,
         updatedAt: true,
@@ -42,7 +45,7 @@ export class UsersService {
     })
 
     const aggregate = await this.prisma.user.aggregate({
-      _count: true
+      _count: true,
     })
 
     return {
@@ -96,5 +99,41 @@ export class UsersService {
     })
     console.log("DELETED ", deletedUser)
     return deletedUser
+  }
+
+  /**
+   * only admin
+   * @param id id of user to ban
+  */
+  async banUser(id: number): Promise<User> {
+    try {
+      const bannedUser = await this.prisma.user.update({
+        where: { id },
+        data: {
+          isBanned: true
+        }
+      })
+      return bannedUser
+    } catch (error) {
+      throw new NotFoundError('user not found')
+    }
+  }
+
+  /**
+   * only admin
+   * @param id id of user to ban
+  */
+  async unBanUser(id: number): Promise<User> {
+    try {
+      const bannedUser = await this.prisma.user.update({
+        where: { id },
+        data: {
+          isBanned: false
+        }
+      })
+      return bannedUser
+    } catch (error) {
+      throw new NotFoundError('user not found')
+    }
   }
 }

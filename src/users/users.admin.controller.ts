@@ -6,11 +6,12 @@ import { UpdateUserDto } from './dtos/UpdateUserDto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { ListAllUsersDto } from './dtos/list-all-users.dto';
+import { NotFoundError } from 'src/common/errors/not-found-error';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) { }
-  //all these endopoints are available only to the admin user
+  //INFO: All these endopoints are available only to the admin user
   @Roles(Role.Admin)
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -24,6 +25,7 @@ export class UsersController {
     return this.usersService.findAll(query)
   }
 
+  @Roles(Role.Admin)
   @Get(':id')
   async findOneUser(@Param('id', ParseIntPipe) id: number) {
     //TODO: add guard to check that a user can read only his data
@@ -53,7 +55,27 @@ export class UsersController {
     }
   }
 
+  @Roles((Role.Admin))
+  @Patch(':id/ban')
+  async banUser(@Param('id', ParseIntPipe) id: number) {
+    try {
+      return await this.usersService.banUser(id)
+    } catch (error) {
+      if (error instanceof NotFoundError)
+        throw new NotFoundException(error.message)
+    }
+  }
 
+  @Roles((Role.Admin))
+  @Patch(':id/unban')
+  async unBanUser(@Param('id', ParseIntPipe) id: number) {
+    try {
+      return await this.usersService.unBanUser(id)
+    } catch (error) {
+      if (error instanceof NotFoundError)
+        throw new NotFoundException(error.message)
+    }
+  }
 
 
 }
