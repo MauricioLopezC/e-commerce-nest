@@ -74,6 +74,8 @@ model User {
   verifiedEmail Boolean      @default(false)
   role          String       @default("USER")
   password      String
+  isBanned      Boolean      @default(false)
+  profileImage  String? // Imagen de perfil del usuario
   cart          Cart?
   favorites     Favorite[]
   order         Order[]

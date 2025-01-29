@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginDto } from './dto/LoginDto';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
@@ -18,6 +18,7 @@ export class LoginService {
     const user = await this.usersService.findByEmail(loginDto.email)
 
     if (!user) throw new UnauthorizedException('Wrong email')
+    if (user.isBanned) throw new ForbiddenException('User is banned')
 
     const matchPassword = await bcrypt.compare(loginDto.password, user.password)
     console.log(matchPassword)
