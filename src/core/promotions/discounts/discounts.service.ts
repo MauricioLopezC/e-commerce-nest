@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CartItemsWithProductAndCategories, DiscountWithProductsAndCategories } from './types/discount-types';
 import { CreateDiscountDto } from './dto/create-discount.dto';
-import { Discount, Prisma } from '@prisma/client';
+import { Discount } from '@prisma/client';
 import { ApplicableTo, DiscountType, UpdateDiscountDto } from './dto/update-discount.dto';
 import { DiscountApplicationError } from '../errors/discount-application-error';
 import { ConnectOrDisconnectCategoriesDto, ConnectOrDisconectProductsDto } from './dto/connect-relations.dto';
@@ -274,6 +274,16 @@ export class DiscountsService {
         categories: true
       }
     })
+    console.log(discounts)
+
+    if (discounts.length === 0) {
+      return {
+        appliedDicounts,
+        discountAmount,
+        finalTotal: total - discountAmount
+      }
+
+    }
     //applying general discuounts first because they apply only once per order
     const generalDiscounts = discounts.filter((discount) => discount.applicableTo === 'GENERAL')
     for (const discount of generalDiscounts) {

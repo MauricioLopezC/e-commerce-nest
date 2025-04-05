@@ -1,9 +1,10 @@
 import { Transform } from "class-transformer";
-import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
+import { IsArray, IsDate, IsDateString, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
 import { OrderStatus } from "../enums/order-status.enum";
 
 /**
  * class used for validate orderBy query param for check only allowedValues
+ * TODO: use this validation in all list-all-entities DTO's
   */
 @ValidatorConstraint({ name: 'isValidOrderBy', async: false })
 class IsValidOrderByConstraint implements ValidatorConstraintInterface {
@@ -41,11 +42,21 @@ export class ListAllOrdersDto {
   @IsString()
   @IsNotEmpty()
   @IsEnum(OrderStatus)
-  status: string
+  status: OrderStatus
 
   @IsString()
   @IsOptional()
   email: string //search for emails 
+
+  @IsOptional()
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  startDate: Date;
+
+  @IsOptional()
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  endDate: Date;
 
 
   //order secction

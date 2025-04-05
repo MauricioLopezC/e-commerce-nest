@@ -34,7 +34,7 @@ export class OrdersService {
     })
 
     const total = cartItems.reduce((previous, current) => (
-      previous + current.product.price * current.quantity
+      previous + current.product?.price * current.quantity
     ), 0)
 
     const { discountAmount, finalTotal } = await this.discountsService.calculateDiscounts(cartItems, total)

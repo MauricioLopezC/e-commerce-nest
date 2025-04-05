@@ -11,12 +11,16 @@ export class OrdersAdminService {
 
   async findAllOrders(query: ListAllOrdersDto) {
 
-    const filters = {
+    let filters = {
       status: query.status,
       user: {
         email: {
           contains: query.email
         }
+      },
+      createdAt: {
+        gte: query.startDate,
+        lte: query.endDate
       }
     }
 

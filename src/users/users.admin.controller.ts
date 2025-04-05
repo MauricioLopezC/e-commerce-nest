@@ -28,7 +28,6 @@ export class UsersController {
   @Roles(Role.Admin)
   @Get(':id')
   async findOneUser(@Param('id', ParseIntPipe) id: number) {
-    //TODO: add guard to check that a user can read only his data
     const userFound = this.usersService.findOne(id)
     if (!userFound) throw new NotFoundException("User does not exist")
     return userFound

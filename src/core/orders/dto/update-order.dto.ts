@@ -6,5 +6,5 @@ export class UpdateOrderDto {
   @IsString()
   @IsNotEmpty()
   @IsEnum(OrderStatus)
-  status: string;
+  status: OrderStatus;
 }

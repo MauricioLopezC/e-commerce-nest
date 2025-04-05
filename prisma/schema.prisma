@@ -6,17 +6,16 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Product {
   id             Int      @id @default(autoincrement())
   name           String
-  price          Float
+  price          Decimal
   description    String
-  category       String   @default("")
-  sex            String
+  sex            Sex      @default(UNISEX)
   unitsOnOrder   Float    @default(0)
   totalCollected Float    @default(0)
   createdAt      DateTime @default(now())
@@ -30,6 +29,12 @@ model Product {
   userReviews UserReview[]
   discounts   Discount[]
   categories  Category[]
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  UNISEX
 }
 
 model ProductSku {
@@ -72,7 +77,7 @@ model User {
   lastName      String
   email         String       @unique
   verifiedEmail Boolean      @default(false)
-  role          String       @default("USER")
+  role          Role         @default(USER)
   password      String
   isBanned      Boolean      @default(false)
   profileImage  String? // Imagen de perfil del usuario
@@ -82,6 +87,11 @@ model User {
   userReviews   UserReview[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model UserReview {
@@ -138,19 +148,25 @@ model Favorite {
 model Order {
   id             Int         @id @default(autoincrement())
   userId         Int
-  status         String      @default("IN_PROGRESS")
-  total          Float
-  discountAmount Float       @default(0)
-  finalTotal     Float
+  status         OrderStatus @default(IN_PROGRESS)
+  total          Decimal
+  discountAmount Decimal     @default(0)
+  finalTotal     Decimal
   orderItems     OrderItem[]
   payment        Payment?
   shipping       Shipping?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   discounts DicountsOnOrders[]
+}
+
+enum OrderStatus {
+  COMPLETED
+  CANCELLED
+  IN_PROGRESS
+  FAILED
 }
 
 model OrderItem {
@@ -159,7 +175,7 @@ model OrderItem {
   productId    Int
   productSkuId Int
   quantity     Int
-  price        Float
+  price        Decimal
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   userReviews  UserReview? //for check if user has ordered that product
@@ -173,13 +189,21 @@ model OrderItem {
 //can change while the price of the order has to remain fixed.
 
 model Payment {
-  id        Int      @id @default(autoincrement())
-  orderId   Int      @unique
-  provider  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int             @id @default(autoincrement())
+  orderId   Int             @unique
+  provider  PaymentProvider
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentProvider {
+  PAYPAL
+  VISA
+  MASTERCARD
+  APPLE_PAY
+  OTHER
 }
 
 model Shipping {
@@ -196,24 +220,36 @@ model Shipping {
 }
 
 model Discount {
-  id             Int      @id @default(autoincrement())
+  id             Int                 @id @default(autoincrement())
   name           String // Nombre del descuento (por ejemplo, "Black Friday")
   description    String? // Descripción del descuento
-  discountType   String // Tipo de descuento: (PERCENTAGE, FIXED)
+  discountType   DiscountType // Tipo de descuento: (PERCENTAGE, FIXED)
   value          Float // Valor del descuento (porcentaje o monto)
   startDate      DateTime // Inicio del descuento
   endDate        DateTime // Fin del descuento
-  applicableTo   String // Nivel de aplicación (PRODUCT, CATEGORY, ORDER, GENERAL)
+  applicableTo   DiscountApplication // Nivel de aplicación (PRODUCT, CATEGORY, ORDER, GENERAL)
   orderThreshold Float? // Monto mínimo de la orden para aplicar el descuento
   maxUses        Int? // Número máximo de usos
-  currentUses    Int      @default(0) // Número actual de usos
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  currentUses    Int                 @default(0) // Número actual de usos
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   orders     DicountsOnOrders[]
   products   Product[]
   categories Category[]
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum DiscountApplication {
+  PRODUCT
+  CATEGORY
+  ORDER
+  GENERAL
 }
 
 //only one DiscountCode per Order
