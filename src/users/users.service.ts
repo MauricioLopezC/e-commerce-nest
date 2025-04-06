@@ -10,9 +10,17 @@ import { NotFoundError } from 'src/common/errors/not-found-error';
 export class UsersService {
   constructor(private prisma: PrismaService) { }
 
+  /**
+   * create a user and cart for that user in a transaction;
+   */
   async create(createUserDto: CreateUserDto): Promise<User> {
     const createdUser = await this.prisma.user.create({
-      data: createUserDto
+      data: {
+        ...createUserDto,
+        cart: {
+          create: {}
+        }
+      }
     })
     //should return User without the password and many other sensitive data
     return createdUser

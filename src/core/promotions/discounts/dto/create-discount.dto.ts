@@ -27,7 +27,7 @@ export class CreateDiscountDto {
   @IsString()
   @IsNotEmpty()
   @IsEnum(DiscountType)
-  discountType: string
+  discountType: DiscountType
 
   @IsNumber()
   @IsPositive()
@@ -43,13 +43,12 @@ export class CreateDiscountDto {
 
   @IsString()
   @IsEnum(ApplicableTo)
-  applicableTo: string
+  applicableTo: ApplicableTo
 
-  //TODO: instead optional, use 0 value
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  orderThreshold: number
+  orderThreshold: number = 0
 
   @IsOptional()
   @IsInt()

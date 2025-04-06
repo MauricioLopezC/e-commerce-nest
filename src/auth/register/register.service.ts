@@ -14,13 +14,12 @@ export class RegisterService {
   ) { }
 
   async register(createUserDto: CreateUserDto): Promise<User> {
-    //TODO: create cart for created User
     console.log("REGISTER SERVICE", createUserDto)
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10)
     createUserDto.password = hashedPassword
     const createdUser = await this.usersService.create(createUserDto)
-    await this.cartService.create(createdUser.id)
+    //await this.cartService.create(createdUser.id)
     delete createdUser.role
     delete createdUser.password
     return createdUser

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CartItem, Order, Prisma, Product } from '@prisma/client';
+import { CartItem, Prisma, Product } from '@prisma/client';
 import { ResendService } from 'nestjs-resend';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { DiscountsService } from '../promotions/discounts/discounts.service';
@@ -28,16 +28,18 @@ export class OrdersService {
       },
       include: {
         product: {
-          include: { categories: true }
+          include: {
+            categories: true,
+          },
         }
       }
     })
 
-    const total = cartItems.reduce((previous, current) => (
-      previous + current.product?.price * current.quantity
-    ), 0)
+    const total = cartItems.reduce((previous: Prisma.Decimal, current) => (
+      previous.plus(current.product.price.times(current.quantity))
+    ), new Prisma.Decimal(0))
 
-    const { discountAmount, finalTotal } = await this.discountsService.calculateDiscounts(cartItems, total)
+    const { discountAmount, finalTotal } = await this.discountsService.calculateDiscounts(cartItems, new Prisma.Decimal(total))
 
     const orderItems = cartItems.map((cartItem) => (
       {
@@ -104,7 +106,7 @@ export class OrdersService {
               increment: orderItem.quantity
             },
             totalCollected: {
-              increment: orderItem.price * orderItem.quantity
+              increment: orderItem.price.times(orderItem.quantity).toNumber()
             }
           }
         })

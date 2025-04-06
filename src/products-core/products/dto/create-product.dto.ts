@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty, IsNumber, IsPositive, IsArray, Min } from "class-validator";
+import { Sex } from "../enums/sex.enum";
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
@@ -20,5 +21,5 @@ export class CreateProductDto {
 
   @IsString()
   @IsNotEmpty()
-  sex: string;
+  sex: Sex;
 }

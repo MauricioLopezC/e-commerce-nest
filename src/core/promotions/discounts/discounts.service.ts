@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CartItemsWithProductAndCategories, DiscountWithProductsAndCategories } from './types/discount-types';
 import { CreateDiscountDto } from './dto/create-discount.dto';
-import { Discount } from '@prisma/client';
+import { Discount, Prisma } from '@prisma/client';
 import { ApplicableTo, DiscountType, UpdateDiscountDto } from './dto/update-discount.dto';
 import { DiscountApplicationError } from '../errors/discount-application-error';
 import { ConnectOrDisconnectCategoriesDto, ConnectOrDisconectProductsDto } from './dto/connect-relations.dto';
@@ -259,10 +259,10 @@ export class DiscountsService {
 
   async calculateDiscounts(
     cartItems: CartItemsWithProductAndCategories[],
-    total: number
+    total: Prisma.Decimal
   ) {
-    const appliedDicounts: { id: number, discountAmount: number }[] = []
-    let discountAmount = 0;
+    const appliedDiscounts: { id: number, discountAmount: Prisma.Decimal }[] = []
+    let discountAmount = new Prisma.Decimal(0);
     const now = new Date()
     const discounts = await this.prisma.discount.findMany({
       where: {
@@ -278,28 +278,28 @@ export class DiscountsService {
 
     if (discounts.length === 0) {
       return {
-        appliedDicounts,
+        appliedDicounts: appliedDiscounts,
         discountAmount,
-        finalTotal: total - discountAmount
+        finalTotal: new Prisma.Decimal(total).minus(discountAmount)
       }
 
     }
     //applying general discuounts first because they apply only once per order
     const generalDiscounts = discounts.filter((discount) => discount.applicableTo === 'GENERAL')
     for (const discount of generalDiscounts) {
-      if (discount.orderThreshold && discount.orderThreshold > total) continue
+      if (discount.orderThreshold && new Prisma.Decimal(discount.orderThreshold).gt(total)) continue
       if (discount.maxUses && discount.maxUses < discount.currentUses) continue
-      let oneDiscountAmount: number
+      let oneDiscountAmount: Prisma.Decimal
 
       if (discount.discountType === 'PERCENTAGE') {
-        oneDiscountAmount = (total / 100) * discount.value
-        discountAmount += oneDiscountAmount
+        oneDiscountAmount = total.divToInt(100).times(discount.value)
+        discountAmount = discountAmount.plus(oneDiscountAmount)
       } else {
-        oneDiscountAmount = discount.value
-        discountAmount += oneDiscountAmount
+        oneDiscountAmount = new Prisma.Decimal(discount.value)
+        discountAmount = discountAmount.plus(oneDiscountAmount)
       }
       this.incrementUsage(discount.id)
-      appliedDicounts.push({ id: discount.id, discountAmount: oneDiscountAmount })
+      appliedDiscounts.push({ id: discount.id, discountAmount: oneDiscountAmount })
     }
 
     //We apply the other applicable discounts if there are any
@@ -309,29 +309,29 @@ export class DiscountsService {
       ))
       //applying all applicable discount for current product, if that discount exists
       for (const discount of applicableDiscounts) {
-        if (discount.orderThreshold && discount.orderThreshold > total) continue
+        if (discount.orderThreshold && new Prisma.Decimal(discount.orderThreshold).gt(total)) continue
         if (discount.maxUses && discount.maxUses < discount.currentUses) continue
-        let oneDiscountAmount: number
+        let oneDiscountAmount: Prisma.Decimal
 
 
         if (discount.discountType === 'PERCENTAGE') {
-          oneDiscountAmount = (cartItem.product.price / 100) * discount.value
-          discountAmount += oneDiscountAmount
+          oneDiscountAmount = (new Prisma.Decimal(cartItem.product.price).divToInt(100)).times(new Prisma.Decimal(discount.value))
+          discountAmount = discountAmount.plus(oneDiscountAmount)
 
         } else {
-          oneDiscountAmount = discount.value
-          discountAmount += oneDiscountAmount
+          oneDiscountAmount = new Prisma.Decimal(discount.value)
+          discountAmount = discountAmount.plus(oneDiscountAmount)
         }
         this.incrementUsage(discount.id)
-        appliedDicounts.push({ id: discount.id, discountAmount: oneDiscountAmount })
+        appliedDiscounts.push({ id: discount.id, discountAmount: oneDiscountAmount })
       }
     }
 
-    discountAmount = Math.min(discountAmount, total)
+    discountAmount = Prisma.Decimal.min(discountAmount, total)
     return {
-      appliedDicounts,
+      appliedDicounts: appliedDiscounts,
       discountAmount,
-      finalTotal: total - discountAmount
+      finalTotal: total.minus(discountAmount)
     }
   }
 

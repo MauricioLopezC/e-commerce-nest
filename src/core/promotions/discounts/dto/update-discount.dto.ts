@@ -29,7 +29,7 @@ export class UpdateDiscountDto {
   @IsString()
   @IsNotEmpty()
   @IsEnum(DiscountType)
-  discountType: string
+  discountType: DiscountType
 
   @IsOptional()
   @IsNumber()
@@ -49,7 +49,7 @@ export class UpdateDiscountDto {
   @IsOptional()
   @IsString()
   @IsEnum(ApplicableTo)
-  applicableTo: string
+  applicableTo: ApplicableTo
 
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })

@@ -10,15 +10,14 @@ export class StatisticsService {
     const startDate = getTotalSalesByMonthDto.startDate
     const endDate = getTotalSalesByMonthDto.endDate
     const result = await this.prisma.$queryRaw`
-    SELECT 
-      strftime('%Y-%m', datetime("createdAt" / 1000, 'unixepoch')) AS month, 
-      SUM("finalTotal") AS total_sales
-    FROM "Order"
-    WHERE datetime("createdAt" / 1000, 'unixepoch') BETWEEN datetime(${startDate}, 'unixepoch') 
-      AND datetime(${endDate}, 'unixepoch')
+      SELECT 
+        DATE_TRUNC('month', "createdAt") AS month, 
+        SUM("finalTotal") AS total_sales
+      FROM "Order"
+      WHERE "createdAt" BETWEEN ${new Date(startDate)} AND ${new Date(endDate)}
       AND "status" = 'COMPLETED'
-    GROUP BY month
-    ORDER BY month;
+      GROUP BY month
+      ORDER BY month;
   `;
     return result
   }

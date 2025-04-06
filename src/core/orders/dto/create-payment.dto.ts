@@ -1,6 +1,8 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { PaymentProvider } from "../enums/payment-provider.enum";
 export class CreatePaymentDto {
   @IsString()
   @IsNotEmpty()
-  provider: string;
+  @IsEnum(PaymentProvider)
+  provider: PaymentProvider;
 }

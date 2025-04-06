@@ -1,5 +1,6 @@
 import { Transform } from "class-transformer";
 import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from "class-validator";
+import { Sex } from "../enums/sex.enum";
 export class ListAllProductDto {
   //pagination secction
   @IsOptional()
@@ -32,7 +33,7 @@ export class ListAllProductDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  sex: string;
+  sex: Sex;
 
   //order secction
   @IsOptional()
