@@ -14,7 +14,7 @@ export class CartService {
   }
 
   async findAll(userId: number) {
-    const carts = await this.prisma.cart.findUnique({
+    const carts = await this.prisma.cart.findMany({
       where: {
         userId
       },

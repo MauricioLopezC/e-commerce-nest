@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, NotFoundException } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
@@ -15,8 +15,12 @@ export class CartController {
   }
 
   @Get()
-  findAll(@Param('userId', ParseIntPipe) userId: number) {
-    return this.cartService.findAll(userId);
+  async findAll(@Param('userId', ParseIntPipe) userId: number) {
+    try {
+      return await this.cartService.findAll(userId)
+    } catch (error) {
+      throw new NotFoundException('Carts Not found')
+    };
   }
 
   // @Get(':id')

@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dtos/CreateUserDto';
 import { UpdateUserDto } from './dtos/UpdateUserDto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from '@prisma/client';
+import { OrderStatus, User } from '@prisma/client';
 import { ListAllUsersDto } from './dtos/list-all-users.dto';
 import { NotFoundError } from 'src/common/errors/not-found-error';
+import { UsersListResponseDto } from './dtos/users-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -26,7 +27,7 @@ export class UsersService {
     return createdUser
   }
 
-  async findAll(query: ListAllUsersDto) {
+  async findAll(query: ListAllUsersDto): Promise<UsersListResponseDto> {
     const limit = query.limit
     const page = query.page
     const offset = (page - 1) * limit //for pagination offset
@@ -37,19 +38,38 @@ export class UsersService {
         firstName: true,
         lastName: true,
         email: true,
+        verifiedEmail: true,
+        role: true,
         isBanned: true,
         profileImage: true,
-        role: true,
         createdAt: true,
         updatedAt: true,
-        order: {
-          include: {
-            orderItems: true
-          }
-        },
       },
       take: limit,
       skip: offset
+    })
+
+    //OPTIMIZE: consider move this logic, totalSpent by user and totalOrdersBy uset to another place
+    //in some cases we only need basic users data and this could cause bad performance
+    const usersIds: number[] = users.map((user) => user.id)
+    const ordersByUser = await this.prisma.order.groupBy({
+      by: 'userId',
+      where: {
+        userId: {
+          in: usersIds
+        },
+        status: OrderStatus.COMPLETED
+      },
+      _sum: {
+        finalTotal: true
+      },
+      _count: true
+    })
+
+    const newUsers = users.map((user) => {
+      const totalSpent = ordersByUser.find((order) => order.userId === user.id)?._sum.finalTotal.toNumber() ?? 0
+      const totalOrders = ordersByUser.find((order) => order.userId === user.id)?._count ?? 0
+      return { ...user, totalSpent, totalOrders }
     })
 
     const aggregate = await this.prisma.user.aggregate({
@@ -57,11 +77,12 @@ export class UsersService {
     })
 
     return {
-      users,
-      aggregate
+      users: newUsers,
+      metadata: { ...aggregate }
     }
   }
 
+  //TODO: update slect selecting every property but password
   async findOne(id: number) {
     return await this.prisma.user.findUnique({
       where: {

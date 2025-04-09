@@ -7,9 +7,14 @@ export class StatisticsController {
   constructor(private readonly statisticsService: StatisticsService) { }
 
 
-  @Get('monthly')
+  @Get('sales/monthly')
   async getTotalSalesByMonth(@Query() query: GetTotalSalesByMonthDto) {
     return await this.statisticsService.getTotalSalesByMonth(query)
+  }
+
+  @Get('sales/by-user')
+  async getTotalSalesByUser() {
+    return await this.statisticsService.salesByUser()
   }
 
 
