@@ -22,4 +22,8 @@ export class SearchService {
     return products
   }
 
+  async findText() {
+
+  }
+
 }
