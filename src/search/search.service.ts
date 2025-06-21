@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SearchDto } from './dto/search.dto';
+import { fullTextSearch } from "@prisma/client/sql"
 
 @Injectable()
 export class SearchService {
@@ -22,8 +23,15 @@ export class SearchService {
     return products
   }
 
-  async findText() {
-
+  /**
+  * Format query.productName because fullTextSearch doesn't support words
+  * separated with spaces
+  */
+  async findByNameOrDescription(query: SearchDto) {
+    const term = query.productName.split(" ").join(" | ")
+    const result = await this.prisma.$queryRawTyped(fullTextSearch(term))
+    console.log(result)
+    return result;
   }
 
 }
