@@ -14,8 +14,6 @@ export class RegisterService {
   ) { }
 
   async register(createUserDto: CreateUserDto): Promise<User> {
-    console.log("REGISTER SERVICE", createUserDto)
-
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10)
     createUserDto.password = hashedPassword
     const createdUser = await this.usersService.create(createUserDto)

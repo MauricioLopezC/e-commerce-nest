@@ -82,7 +82,6 @@ export class UsersService {
     }
   }
 
-  //TODO: update slect selecting every property but password
   async findOne(id: number) {
     return await this.prisma.user.findUnique({
       where: {
