@@ -4,16 +4,27 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Category } from '@prisma/client';
 import { NotFoundError } from 'src/common/errors/not-found-error';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
+import { InternalServerError } from 'src/common/errors/internal-server-error';
 
 @Injectable()
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) { }
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const category = await this.prisma.category.create({
-      data: createCategoryDto
-    })
-    return category;
+    try {
+      const category = await this.prisma.category.create({
+        data: createCategoryDto
+      })
+      return category;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+        console.log(error.meta)
+        throw new AlreadyIncludedError(`Error! category with name: ${createCategoryDto.name} already exists!`)
+      }
+      throw new InternalServerError("Error! try again later")
+    }
   }
 
   async findAll() {

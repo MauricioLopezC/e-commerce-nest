@@ -13,7 +13,6 @@ import { NotFoundError } from 'src/common/errors/not-found-error';
 @UseFilters(PrismaClientExceptionFilter)
 @Controller('products')
 export class ProductsController {
-  //TODO: error control like cartItemController
   //NOTE: PrismaClientExceptionFilter catch all PrismaClientKnownRequestError
   //exceptions
   constructor(private readonly productsService: ProductsService) { }
