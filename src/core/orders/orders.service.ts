@@ -5,6 +5,7 @@ import { CartItem, Prisma, Product } from '@prisma/client';
 import { ResendService } from 'nestjs-resend';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { DiscountsService } from '../promotions/discounts/discounts.service';
+import { InternalServerError } from 'src/common/errors/internal-server-error';
 
 @Injectable()
 export class OrdersService {
@@ -50,73 +51,75 @@ export class OrdersService {
       }
     ))
 
-    return this.prisma.$transaction(async (tx) => {
-      const order = await tx.order.create({
-        data: {
-          userId,
-          total,
-          finalTotal,
-          payment: {
-            create: createOrderDto.payment
-          },
-          shipping: {
-            create: createOrderDto.shipping
-          },
-          orderItems: {
-            create: orderItems
-          },
-          discountAmount
-        },
-        include: {
-          orderItems: true
-        }
-      })
-
-      // const email = await this.sendEmail(createOrderDto.email, cartItems)
-      // console.log("EMAIL", email)
-
-      await tx.cartItem.deleteMany({
-        where: {
-          cartId: cart.id
-        }
-      })
-
-      const stockUpdates = order.orderItems.map((orderItem) => {
-        return tx.productSku.update({
-          where: {
-            id: orderItem.productSkuId
-          },
+    try {
+      const result = this.prisma.$transaction(async (tx) => {
+        const order = await tx.order.create({
           data: {
-            quantity: {
-              decrement: orderItem.quantity
-            }
-          }
-        })
-
-      })
-      await Promise.all(stockUpdates)
-
-      const productUpdates = order.orderItems.map((orderItem) => {
-        return tx.product.update({
-          where: {
-            id: orderItem.productId,
-          },
-          data: {
-            unitsOnOrder: {
-              increment: orderItem.quantity
+            userId,
+            total,
+            finalTotal,
+            payment: {
+              create: createOrderDto.payment
             },
-            totalCollected: {
-              increment: orderItem.price.times(orderItem.quantity).toNumber()
-            }
+            shipping: {
+              create: createOrderDto.shipping
+            },
+            orderItems: {
+              create: orderItems
+            },
+            discountAmount
+          },
+          include: {
+            orderItems: true
           }
         })
+
+
+        await tx.cartItem.deleteMany({
+          where: {
+            cartId: cart.id
+          }
+        })
+
+        const stockUpdates = order.orderItems.map((orderItem) => {
+          return tx.productSku.update({
+            where: {
+              id: orderItem.productSkuId
+            },
+            data: {
+              quantity: {
+                decrement: orderItem.quantity
+              }
+            }
+          })
+
+        })
+        await Promise.all(stockUpdates)
+
+        const productUpdates = order.orderItems.map((orderItem) => {
+          return tx.product.update({
+            where: {
+              id: orderItem.productId,
+            },
+            data: {
+              unitsOnOrder: {
+                increment: orderItem.quantity
+              },
+              totalCollected: {
+                increment: orderItem.price.times(orderItem.quantity).toNumber()
+              }
+            }
+          })
+        })
+
+        await Promise.all(productUpdates)
+        return order
       })
-
-      await Promise.all(productUpdates)
-      return order
-    })
-
-
+      this.sendEmail(createOrderDto.email, cartItems)
+      return result
+    } catch (error) {
+      throw new InternalServerError("Error al crear la orden")
+    }
   }
 
   async sendEmail(email: string, cartItems: Array<CartItem & { product: Product }>) {
