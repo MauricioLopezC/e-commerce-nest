@@ -6,13 +6,17 @@ import { ResendService } from 'nestjs-resend';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { DiscountsService } from '../promotions/discounts/discounts.service';
 import { InternalServerError } from 'src/common/errors/internal-server-error';
+import { ValidationError } from 'src/common/errors/validation-error';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OrderCreatedEvent } from './events/order-created.envent';
 
 @Injectable()
 export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private resendService: ResendService,
-    private discountsService: DiscountsService
+    private discountsService: DiscountsService,
+    private eventEmitter: EventEmitter2
   ) { }
 
   async create(userId: number, createOrderDto: CreateOrderDto) {
@@ -35,12 +39,14 @@ export class OrdersService {
         }
       }
     })
+    //TODO: check if cartItems list is empty
 
     const total = cartItems.reduce((previous: Prisma.Decimal, current) => (
       previous.plus(current.product.price.times(current.quantity))
     ), new Prisma.Decimal(0))
 
-    const { discountAmount, finalTotal } = await this.discountsService.calculateDiscounts(cartItems, new Prisma.Decimal(total))
+    const { discountAmount, finalTotal, appliedDiscounts } = await this.discountsService.calculateDiscounts(cart.id, new Prisma.Decimal(total), true)
+    console.log(appliedDiscounts)
 
     const orderItems = cartItems.map((cartItem) => (
       {
@@ -50,10 +56,25 @@ export class OrdersService {
         price: cartItem.product.price
       }
     ))
-
+    const cartProductSkuIds = cartItems.map((cartItem) => cartItem.productSkuId)
     try {
-      const result = this.prisma.$transaction(async (tx) => {
-        const order = await tx.order.create({
+      const result = await this.prisma.$transaction(async (tx) => {
+        //first check available stock
+        const productSkus = await tx.productSku.findMany({
+          where: {
+            id: {
+              in: cartProductSkuIds
+            }
+          }
+        })
+        for (let productSku of productSkus) {
+          const cartItem = cartItems.find(cartItem => cartItem.productSkuId === productSku.id)
+          if (cartItem.quantity > productSku.quantity) {
+            throw new ValidationError('There is not enough stock')
+          }
+        }
+
+        const createdOrder = await tx.order.create({
           data: {
             userId,
             total,
@@ -74,14 +95,13 @@ export class OrdersService {
           }
         })
 
-
         await tx.cartItem.deleteMany({
           where: {
             cartId: cart.id
           }
         })
 
-        const stockUpdates = order.orderItems.map((orderItem) => {
+        const stockUpdates = createdOrder.orderItems.map((orderItem) => {
           return tx.productSku.update({
             where: {
               id: orderItem.productSkuId
@@ -96,7 +116,10 @@ export class OrdersService {
         })
         await Promise.all(stockUpdates)
 
-        const productUpdates = order.orderItems.map((orderItem) => {
+        //NOTE: this code block can be be removed from the transaction
+        //and moved to a trigger over event passing order id, have access
+        //to orderItems
+        const productUpdates = createdOrder.orderItems.map((orderItem) => {
           return tx.product.update({
             where: {
               id: orderItem.productId,
@@ -113,9 +136,20 @@ export class OrdersService {
         })
 
         await Promise.all(productUpdates)
-        return order
+        return createdOrder
       })
       this.sendEmail(createOrderDto.email, cartItems)
+
+      if (result) {
+        let orderCreatedEvent = new OrderCreatedEvent();
+        orderCreatedEvent.orderId = result.id
+        this.eventEmitter.emit(
+          'order.created',
+          orderCreatedEvent
+        )
+      }
+
+      //TODO: register discount usage
       return result
     } catch (error) {
       throw new InternalServerError("Error al crear la orden")
@@ -165,7 +199,8 @@ export class OrdersService {
           }
         },
         payment: true,
-        shipping: true
+        shipping: true,
+        discounts: true
       }
     })
     const aggregate = await this.prisma.order.aggregate({

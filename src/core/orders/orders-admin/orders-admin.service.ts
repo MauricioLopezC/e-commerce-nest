@@ -83,7 +83,7 @@ export class OrdersAdminService {
 
     return {
       orders,
-      aggregate,
+      metadata: { ...aggregate },
     }
   }
 

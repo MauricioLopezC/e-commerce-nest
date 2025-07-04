@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, MethodNotAllowedException, NotFoundException, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, InternalServerErrorException, MethodNotAllowedException, NotFoundException, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { DiscountsService } from './discounts.service';
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import { Role } from 'src/auth/enums/role.enum';
@@ -17,7 +17,12 @@ export class DiscountsController {
   @Roles(Role.Admin)
   @Post()
   async create(@Body() createDiscountDto: CreateDiscountDto) {
-    return await this.discountsService.create(createDiscountDto)
+    try {
+      return await this.discountsService.create(createDiscountDto)
+    } catch (error) {
+      if (error instanceof ValidationError) throw new BadRequestException(error.message)
+      throw new InternalServerErrorException(error.message)
+    }
   }
 
   @PublicRoute()

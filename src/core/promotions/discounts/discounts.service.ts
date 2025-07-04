@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CartItemsWithProductAndCategories, DiscountWithProductsAndCategories } from './types/discount-types';
+import { AppliedDiscount, CartItemsWithProductAndCategories, DiscountWithProductsAndCategories } from './types/discount-types';
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import { Discount, Prisma } from '@prisma/client';
 import { ApplicableTo, DiscountType, UpdateDiscountDto } from './dto/update-discount.dto';
-import { DiscountApplicationError } from '../errors/discount-application-error';
 import { ConnectOrDisconnectCategoriesDto, ConnectOrDisconectProductsDto } from './dto/connect-relations.dto';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { ValidationError } from 'src/common/errors/validation-error';
@@ -62,22 +61,19 @@ export class DiscountsService {
     if (creatediscountDto.applicableTo === 'GENERAL'
       && (creatediscountDto.products || creatediscountDto.categories)
     ) {
-      throw new DiscountApplicationError("We cannot receive discounts or categories if the discount is generally applicable")
+      throw new ValidationError("We cannot receive discounts or categories if the discount is generally applicable")
     }
     if (creatediscountDto.applicableTo === 'PRODUCT'
       && (!creatediscountDto.products || creatediscountDto.products.length === 0)
     ) {
-      throw new DiscountApplicationError("ProductIds list is required")
+      throw new ValidationError("ProductIds list is required")
     }
     if (creatediscountDto.applicableTo === 'CATEGORY'
       && (!creatediscountDto.categories || creatediscountDto.categories.length === 0)) {
-      throw new DiscountApplicationError("CategoryIds list is required")
+      throw new ValidationError("CategoryIds list is required")
     }
 
-    if (creatediscountDto.startDate
-      && creatediscountDto.endDate
-      && creatediscountDto.startDate >= creatediscountDto.endDate
-    ) {
+    if (creatediscountDto.startDate >= creatediscountDto.endDate) {
       throw new ValidationError('End date must be greater than the Start Date')
     }
 
@@ -257,11 +253,18 @@ export class DiscountsService {
     }
   }
 
+  /**
+  * @param cartId user cart id
+  * @param total total amount of cart
+  * @param isApplying  Flag indicating that the discount is being calculated for an order, 
+  * in which case the use of the discount must be recorded in the database.
+  */
   async calculateDiscounts(
-    cartItems: CartItemsWithProductAndCategories[],
-    total: Prisma.Decimal
+    cartId: number,
+    total: Prisma.Decimal,
+    isApplying: boolean
   ) {
-    const appliedDiscounts: { id: number, discountAmount: Prisma.Decimal }[] = []
+    const appliedDiscounts: AppliedDiscount[] = []
     let discountAmount = new Prisma.Decimal(0);
     const now = new Date()
     const discounts = await this.prisma.discount.findMany({
@@ -274,11 +277,11 @@ export class DiscountsService {
         categories: true
       }
     })
-    console.log(discounts)
+    //console.log(discounts)
 
     if (discounts.length === 0) {
       return {
-        appliedDicounts: appliedDiscounts,
+        appliedDiscounts,
         discountAmount,
         finalTotal: new Prisma.Decimal(total).minus(discountAmount)
       }
@@ -298,11 +301,26 @@ export class DiscountsService {
         oneDiscountAmount = new Prisma.Decimal(discount.value)
         discountAmount = discountAmount.plus(oneDiscountAmount)
       }
-      this.incrementUsage(discount.id)
-      appliedDiscounts.push({ id: discount.id, discountAmount: oneDiscountAmount })
+      if (isApplying) { this.incrementUsage(discount.id) }
+      this.registerDiscount(appliedDiscounts, discount.id, oneDiscountAmount)
     }
 
     //We apply the other applicable discounts if there are any
+    const cartItems = await this.prisma.cartItem.findMany({
+      where: {
+        cartId
+      },
+      include: {
+        product: {
+          include: {
+            categories: true,
+          },
+        }
+      }
+    })
+    //HACK: check if discount is being applied with cartItem quantity,
+    //
+    //because if i order 2 units of product with discount,discount must be applied to each of the 2 product
     for (const cartItem of cartItems) {
       const applicableDiscounts = discounts.filter((discount) => (
         this.isDiscountApplicable(cartItem, discount)
@@ -313,32 +331,49 @@ export class DiscountsService {
         if (discount.maxUses && discount.maxUses < discount.currentUses) continue
         let oneDiscountAmount: Prisma.Decimal
 
-
         if (discount.discountType === 'PERCENTAGE') {
           oneDiscountAmount = (new Prisma.Decimal(cartItem.product.price).divToInt(100)).times(new Prisma.Decimal(discount.value))
-          discountAmount = discountAmount.plus(oneDiscountAmount)
-
+          discountAmount = discountAmount.plus(oneDiscountAmount.times(cartItem.quantity)) //verificar
         } else {
           oneDiscountAmount = new Prisma.Decimal(discount.value)
-          discountAmount = discountAmount.plus(oneDiscountAmount)
+          discountAmount = discountAmount.plus(oneDiscountAmount.times(cartItem.quantity))
         }
-        this.incrementUsage(discount.id)
-        appliedDiscounts.push({ id: discount.id, discountAmount: oneDiscountAmount })
+        if (isApplying) { this.incrementUsage(discount.id) }
+        this.registerDiscount(appliedDiscounts, discount.id, oneDiscountAmount)
       }
     }
 
     discountAmount = Prisma.Decimal.min(discountAmount, total)
     return {
-      appliedDicounts: appliedDiscounts,
+      appliedDiscounts,
       discountAmount,
       finalTotal: total.minus(discountAmount)
     }
   }
 
-  private async incrementUsage(orderId: number) {
+
+  private registerDiscount(
+    appliedDiscounts: AppliedDiscount[],
+    discountId: number,
+    discountAmount: Prisma.Decimal
+  ) {
+    const existing = appliedDiscounts.find(d => d.discountId === discountId);
+
+    if (existing) {
+      existing.appliedTimes += 1;
+    } else {
+      appliedDiscounts.push({
+        discountId,
+        discountAmount,
+        appliedTimes: 1,
+      });
+    }
+  }
+
+  private async incrementUsage(discountId: number) {
     await this.prisma.discount.update({
       where: {
-        id: orderId
+        id: discountId
       },
       data: {
         currentUses: {

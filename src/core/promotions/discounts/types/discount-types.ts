@@ -14,3 +14,9 @@ export type CartItemsWithProductAndCategories = Prisma.CartItemGetPayload<{
     }
   }
 }>
+
+export interface AppliedDiscount {
+  discountId: number,
+  discountAmount: Prisma.Decimal,
+  appliedTimes: number
+}

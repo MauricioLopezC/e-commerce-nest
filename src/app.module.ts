@@ -8,9 +8,19 @@ import { CoreModule } from './core/core.module';
 import { SearchModule } from './search/search.module';
 import { ProductsCoreModule } from './products-core/products-core.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
-  imports: [ProductsCoreModule, UsersModule, AuthModule, PrismaModule, CoreModule, SearchModule, StatisticsModule],
+  imports: [
+    ProductsCoreModule,
+    UsersModule,
+    AuthModule,
+    PrismaModule,
+    CoreModule,
+    SearchModule,
+    StatisticsModule,
+    EventEmitterModule.forRoot()
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
