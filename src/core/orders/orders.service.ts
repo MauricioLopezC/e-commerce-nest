@@ -115,27 +115,6 @@ export class OrdersService {
 
         })
         await Promise.all(stockUpdates)
-
-        //NOTE: this code block can be be removed from the transaction
-        //and moved to a trigger over event passing order id, have access
-        //to orderItems
-        const productUpdates = createdOrder.orderItems.map((orderItem) => {
-          return tx.product.update({
-            where: {
-              id: orderItem.productId,
-            },
-            data: {
-              unitsOnOrder: {
-                increment: orderItem.quantity
-              },
-              totalCollected: {
-                increment: orderItem.price.times(orderItem.quantity).toNumber()
-              }
-            }
-          })
-        })
-
-        await Promise.all(productUpdates)
         return createdOrder
       })
       this.sendEmail(createOrderDto.email, cartItems)
@@ -143,13 +122,13 @@ export class OrdersService {
       if (result) {
         let orderCreatedEvent = new OrderCreatedEvent();
         orderCreatedEvent.orderId = result.id
+        orderCreatedEvent.appliedDiscounts = appliedDiscounts
         this.eventEmitter.emit(
           'order.created',
           orderCreatedEvent
         )
       }
 
-      //TODO: register discount usage
       return result
     } catch (error) {
       throw new InternalServerError("Error al crear la orden")
