@@ -66,6 +66,9 @@ export class CartItemsService {
           }
         },
         productSku: true
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     })
     return cartItems
