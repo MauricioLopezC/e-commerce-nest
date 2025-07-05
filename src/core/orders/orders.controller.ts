@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, NotFoundException, UseGuards, BadRequestException } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { OwnGuard } from '../guards/own.guard';
+import { InternalServerError } from 'src/common/errors/internal-server-error';
+import { ValidationError } from 'src/common/errors/validation-error';
 
 @UseGuards(OwnGuard)
 @Controller('users/:userId/orders')
@@ -16,7 +18,8 @@ export class OrdersController {
       return await this.ordersService.create(userId, createOrderDto);
     } catch (error) {
       if (error instanceof NotFoundError) throw new NotFoundException(error.message)
-      else { console.log((error)) }
+      if (error instanceof ValidationError) throw new BadRequestException(error.message)
+      throw new InternalServerError('Error! try again later')
     }
   }
 
@@ -29,10 +32,5 @@ export class OrdersController {
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(+id);
   }
-  //
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-  //   return this.ordersService.update(+id, updateOrderDto);
-  // }
-  //
+
 }

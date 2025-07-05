@@ -39,14 +39,15 @@ export class OrdersService {
         }
       }
     })
-    //TODO: check if cartItems list is empty
+    if (cartItems.length === 0) {
+      throw new ValidationError('User cart is empty')
+    }
 
     const total = cartItems.reduce((previous: Prisma.Decimal, current) => (
       previous.plus(current.product.price.times(current.quantity))
     ), new Prisma.Decimal(0))
 
     const { discountAmount, finalTotal, appliedDiscounts } = await this.discountsService.calculateDiscounts(cart.id, new Prisma.Decimal(total), true)
-    console.log(appliedDiscounts)
 
     const orderItems = cartItems.map((cartItem) => (
       {
@@ -131,7 +132,7 @@ export class OrdersService {
 
       return result
     } catch (error) {
-      throw new InternalServerError("Error al crear la orden")
+      throw new InternalServerError("Error creating order")
     }
   }
 
