@@ -9,6 +9,7 @@ import { SearchModule } from './search/search.module';
 import { ProductsCoreModule } from './products-core/products-core.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -19,7 +20,10 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     CoreModule,
     SearchModule,
     StatisticsModule,
-    EventEmitterModule.forRoot()
+    EventEmitterModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true
+    })
   ],
   controllers: [AppController],
   providers: [AppService],

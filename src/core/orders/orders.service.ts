@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CartItem, Prisma, Product } from '@prisma/client';
-import { ResendService } from 'nestjs-resend';
+import { Prisma } from '@prisma/client';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { DiscountsService } from '../promotions/discounts/discounts.service';
 import { InternalServerError } from 'src/common/errors/internal-server-error';
@@ -14,7 +13,6 @@ import { OrderCreatedEvent } from './events/order-created.envent';
 export class OrdersService {
   constructor(
     private prisma: PrismaService,
-    private resendService: ResendService,
     private discountsService: DiscountsService,
     private eventEmitter: EventEmitter2
   ) { }
@@ -118,12 +116,12 @@ export class OrdersService {
         await Promise.all(stockUpdates)
         return createdOrder
       })
-      this.sendEmail(createOrderDto.email, cartItems)
 
       if (result) {
         let orderCreatedEvent = new OrderCreatedEvent();
         orderCreatedEvent.orderId = result.id
         orderCreatedEvent.appliedDiscounts = appliedDiscounts
+        orderCreatedEvent.userId = userId
         this.eventEmitter.emit(
           'order.created',
           orderCreatedEvent
@@ -136,33 +134,6 @@ export class OrdersService {
     }
   }
 
-  async sendEmail(email: string, cartItems: Array<CartItem & { product: Product }>) {
-    let listItems = ''
-    cartItems.forEach((item) => {
-      listItems = listItems.concat(`<li>${item.quantity}X  ${item.product.name}</li>`)
-    })
-
-    const productList = `
-    <ul>
-    ${listItems}
-    </ul>
-    `
-
-    return await this.resendService.send({
-      from: 'Acme <onboarding@resend.dev>',
-      to: email,
-      subject: 'Compra confirmada',
-      html: `
-        <html>
-          <body>
-            <h1>Muchas gracias por comprar en nuestra tienda</h1>
-            <p>Resumen de su compra: </p>
-            ${productList}
-          </body>
-        </html>
-        `,
-    });
-  }
 
   async findAll(userId: number) {
     const orders = await this.prisma.order.findMany({

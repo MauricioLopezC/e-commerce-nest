@@ -2,5 +2,6 @@ import { AppliedDiscount } from "src/core/promotions/discounts/types/discount-ty
 
 export class OrderCreatedEvent {
   orderId: number
+  userId: number
   appliedDiscounts: AppliedDiscount[]
 }
