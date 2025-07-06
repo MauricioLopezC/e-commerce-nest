@@ -37,6 +37,10 @@ export class OrderCreatedListener {
       })
     })
     await Promise.all(productUpdates)
+  }
+
+  @OnEvent('order.created')
+  async registerDiscountsOnOrders(event: OrderCreatedEvent) {
     //now register discount usage:
     const data: Prisma.DiscountsOnOrdersCreateManyInput[] = event.appliedDiscounts.map(item => ({
       orderId: event.orderId,
@@ -44,8 +48,10 @@ export class OrderCreatedListener {
       appliedTimes: item.appliedTimes,
       discountAmount: item.discountAmount.toNumber(),
     }))
+
     await this.prisma.discountsOnOrders.createMany({
       data
     })
   }
+
 }

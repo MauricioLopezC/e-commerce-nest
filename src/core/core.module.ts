@@ -5,8 +5,9 @@ import { PurchasesModule } from './purchases/purchases.module';
 import { CartItemsModule } from './cart-items/cart-items.module';
 import { OrdersModule } from './orders/orders.module';
 import { PromotionsModule } from './promotions/promotions.module';
+import { MailsModule } from './mails/mails.module';
 
 @Module({
-  imports: [CartModule, FavoritesModule, PurchasesModule, CartItemsModule, OrdersModule, PromotionsModule]
+  imports: [CartModule, FavoritesModule, PurchasesModule, CartItemsModule, OrdersModule, PromotionsModule, MailsModule]
 })
 export class CoreModule { }
