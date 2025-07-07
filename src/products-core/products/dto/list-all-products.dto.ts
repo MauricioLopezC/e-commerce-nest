@@ -1,6 +1,21 @@
 import { Transform } from "class-transformer";
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, Validate, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
 import { Sex } from "../enums/sex.enum";
+
+@ValidatorConstraint({ name: 'isValidOrderBy', async: false })
+class IsValidOrderByConstraint implements ValidatorConstraintInterface {
+  private readonly allowedValues = ['price', 'createdAt', 'unitsOnOrder', 'totalCollected', 'updatedAt'];
+
+  validate(values: string[]): boolean {
+    return values.every((value) => this.allowedValues.includes(value) || this.allowedValues.includes(value.slice(1)));
+  }
+
+  defaultMessage(): string {
+    return `Each value in orderby must be one of: ${this.allowedValues.toString()}.`;
+  }
+}
+
+
 export class ListAllProductDto {
   //pagination secction
   @IsOptional()
@@ -37,9 +52,13 @@ export class ListAllProductDto {
 
   //order secction
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  orderBy: string;
+  @Transform(({ value }) =>
+    Array.isArray(value) ? value : [value]
+  ) // Asegurarse de que siempre sea un array
+  @IsArray()
+  @IsString({ each: true })
+  @Validate(IsValidOrderByConstraint)
+  orderBy: string[];
 
   //search secction
 }

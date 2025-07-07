@@ -26,7 +26,6 @@ export class ProductsController {
   @PublicRoute()
   @Get()
   findAll(@Query() query: ListAllProductDto) {
-    console.log("NEW")
     return this.productsService.findAll(query);
   }
 

@@ -8,8 +8,6 @@ import { ConnectCategoriesDto } from './dto/connect-categories.dto';
 
 @Injectable()
 export class ProductsService {
-  //TODO: error control like cartItemService
-  //TODO: change aggregate name to metaData
   //NOTE: all PrismaClientKnownRequestError could be manage by exception filter
   //and we can manage business errors here using custom errors
   //NOTE: consider add unique constraint to product.name
@@ -33,25 +31,19 @@ export class ProductsService {
   async findAll(query: ListAllProductDto) {
     const limit = query.limit
     const page = query.page
-    //TODO: check orderBy is valid field
-    const orderBy = query.orderBy?.split(',') //creating orderby object
-      .map((param) => param.trim())
-      .map((param) => {
-        let sortOrder = param.charAt(0) === '-' ? 'desc' : 'asc';
-        let formatedParam = param.charAt(0) === '-' ? param.slice(1) : param;
-        return {
-          [formatedParam]: sortOrder
-        }
-      })
-
-    console.log('orderBy:', orderBy)
-    console.log("Limit and page: ", limit, page)
-
     const offset = (page - 1) * limit //for pagination offset
+
+    const orderBy = query.orderBy?.map((param) => {
+      let sortOrder = param.charAt(0) === '-' ? 'desc' : 'asc';
+      let formatedParam = param.charAt(0) === '-' ? param.slice(1) : param;
+      return {
+        [formatedParam]: sortOrder
+      }
+    })
+
     delete query.limit
     delete query.page
     delete query.orderBy
-    console.log("filters -->", query)
 
     const products = await this.prisma.product.findMany({
       orderBy,
@@ -71,7 +63,7 @@ export class ProductsService {
 
     return {
       products,
-      aggregate
+      metadata: { ...aggregate }
     }
   }
 
