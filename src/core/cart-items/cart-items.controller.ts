@@ -12,8 +12,6 @@ import { StockError } from './errors/stock-error';
 export class CartItemsController {
   constructor(private readonly cartItemsService: CartItemsService) { }
 
-  //TODO: Check the exception filters for cath all exceptions in a centrilized class
-  //in this way we will not have handle errors in all places
   @Post()
   async create(@Param('cartId', ParseIntPipe) cartId: number, @Body() createCartItemDto: CreateCartItemDto) {
     try {

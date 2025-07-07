@@ -11,12 +11,6 @@ import { PrismaClientExceptionFilter } from 'src/common/filters/prisma-client-ex
 export class ImagesController {
   constructor(private imagesService: ImagesService) { }
 
-  //NOTE: in this approach product id and productSkuId will be
-  //passed in body of the request, for this system with only one
-  //seller its ok, but if we want to support many sellers, like amazon or ML
-  //we need to check productId and productSkuId fileds
-
-
   @Post()
   @Roles(Role.Admin)
   @UseInterceptors(FileInterceptor('file'))
@@ -40,9 +34,9 @@ export class ImagesController {
       body.productId,
       body.productSkuId
     )
-    //TODO: return json inseted text
-    //be careful this is a breaking change
-    return result.secure_url
+    return {
+      url: result.secure_url
+    }
   }
 
   //TODO: Multiple file upload

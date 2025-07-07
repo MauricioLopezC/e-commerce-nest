@@ -1,5 +1,5 @@
 import { Transform, Type } from "class-transformer";
-import { ArrayNotEmpty, IsDefined, IsInt, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsDefined, IsInt, IsNotEmpty, IsObject, IsString, ValidateNested } from "class-validator";
 export class CreateProductSkusDto {
   @IsString()
   @IsNotEmpty()

@@ -11,7 +11,7 @@ import { NotFoundError } from 'src/common/errors/not-found-error';
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) { }
-  //INFO: All these endopoints are available only to the admin user
+  //All these endopoints are available only to the admin user
   @Roles(Role.Admin)
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {

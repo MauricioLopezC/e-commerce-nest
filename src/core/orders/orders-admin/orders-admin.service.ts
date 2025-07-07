@@ -43,12 +43,6 @@ export class OrdersAdminService {
       take: limit,
       skip: offset,
       where: filters,
-      // where: {
-      //   createdAt: {
-      //     gte: new Date('2024/11/1'),
-      //     lte: new Date('2024/10/1')
-      //   }
-      // },
       orderBy,
       include: {
         orderItems: {
@@ -69,6 +63,9 @@ export class OrdersAdminService {
             createdAt: true,
             updatedAt: true
           }
+        },
+        discounts: {
+          include: { discount: true }
         }
       },
     })
@@ -77,6 +74,7 @@ export class OrdersAdminService {
       where: filters,
       _sum: {
         total: true,
+        finalTotal: true,
       },
       _count: true,
     })
