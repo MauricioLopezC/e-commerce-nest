@@ -10,8 +10,7 @@ import { ConnectCategoriesDto } from './dto/connect-categories.dto';
 export class ProductsService {
   //NOTE: all PrismaClientKnownRequestError could be manage by exception filter
   //and we can manage business errors here using custom errors
-  //NOTE: consider add unique constraint to product.name
-  //
+
   constructor(private prisma: PrismaService) { }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -81,7 +80,6 @@ export class ProductsService {
   }
 
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
-    console.log(updateProductDto)
     const updatedProduct = await this.prisma.product.update({
       where: {
         id

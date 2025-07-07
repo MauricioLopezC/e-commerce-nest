@@ -50,6 +50,8 @@ model ProductSku {
   images     Image[]
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+
+  @@unique([productId, size, color])
 }
 
 model Category {

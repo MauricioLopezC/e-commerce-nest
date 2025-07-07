@@ -1,15 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, NotFoundException, UseFilters } from '@nestjs/common';
 import { ProductSkusService } from './product-skus.service';
-import { CreateProductSkusDto } from './dto/create-product-skus.dto';
+import { CreateBatchProductSkusDto, CreateProductSkusDto } from './dto/create-product-skus.dto';
 import { UpdateProductSkusDto } from './dto/update-product-skus.dto';
 import { PublicRoute } from 'src/auth/decorators/public-routes.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
+import { PrismaClientExceptionFilter } from 'src/common/filters/prisma-client-exception/prisma-client-exception.filter';
 
+@UseFilters(PrismaClientExceptionFilter)
 @Controller('products/:productId/product-skus')
 export class ProductSkusController {
   //images could be passes in array on crateProductskuDto
-  //TODO:http Exceptions from custom Errors in Service
   constructor(private readonly productSkusService: ProductSkusService) { }
 
   @Roles(Role.Admin)
@@ -34,18 +35,25 @@ export class ProductSkusController {
 
   @Roles(Role.Admin)
   @Patch(':id')
-  update(
+  async update(
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductSkusDto: UpdateProductSkusDto) {
-    return this.productSkusService.update(productId, id, updateProductSkusDto);
+    return await this.productSkusService.update(productId, id, updateProductSkusDto);
   }
 
   @Roles(Role.Admin)
   @Delete(':id')
-  remove(
+  async remove(
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) id: number) {
-    return this.productSkusService.remove(productId, id);
+    return await this.productSkusService.remove(productId, id);
+  }
+
+  @Roles(Role.Admin)
+  @Post('batch')
+  async batchCreate(@Param('productId', ParseIntPipe) productId: number, @Body() createbatchdto: CreateBatchProductSkusDto) {
+    const productSkus = await this.productSkusService.batchCreate(productId, createbatchdto)
+    return productSkus
   }
 }

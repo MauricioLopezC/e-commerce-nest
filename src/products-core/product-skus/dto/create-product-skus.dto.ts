@@ -1,5 +1,5 @@
-import { Transform } from "class-transformer";
-import { IsInt, IsNotEmpty, IsString } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { ArrayNotEmpty, IsDefined, IsInt, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, ValidateNested } from "class-validator";
 export class CreateProductSkusDto {
   @IsString()
   @IsNotEmpty()
@@ -14,3 +14,14 @@ export class CreateProductSkusDto {
   @Transform(({ value }) => Number(value)) //el atributo viene como un string y lo pasamos a number
   quantity: number;
 }
+
+
+export class CreateBatchProductSkusDto {
+  @ArrayNotEmpty()
+  @IsDefined({ each: true })
+  @IsObject({ each: true })
+  @ValidateNested()
+  @Type(() => CreateProductSkusDto)
+  productSkus: CreateProductSkusDto[];
+}
+

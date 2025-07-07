@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProductSkusDto } from './dto/create-product-skus.dto';
+import { CreateBatchProductSkusDto, CreateProductSkusDto } from './dto/create-product-skus.dto';
 import { UpdateProductSkusDto } from './dto/update-product-skus.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ProductSku } from '@prisma/client';
+import { Prisma, ProductSku } from '@prisma/client';
 
 @Injectable()
 export class ProductSkusService {
-  //TODO: custom error handling in create, update and remove
   //TODO: Add array image attribute in UpdateProductSkusDto
   constructor(private prisma: PrismaService) { }
 
@@ -23,7 +22,6 @@ export class ProductSkusService {
   }
 
   async findAll(productId: number): Promise<ProductSku[]> {
-    console.log("PROD ID ==> ", productId)
     const skus = await this.prisma.productSku.findMany({
       where: {
         productId
@@ -69,7 +67,12 @@ export class ProductSkusService {
     return deletedSku
   }
 
-  async batchCreate() {
-    //TODO: implement
+  async batchCreate(productId: number, createProductSkusBatchDto: CreateBatchProductSkusDto) {
+    const data: Prisma.ProductSkuCreateManyInput[] = createProductSkusBatchDto.productSkus.map(item => ({ ...item, productId }))
+    const result = await this.prisma.productSku.createMany({
+      data,
+      skipDuplicates: true
+    })
+    return result
   }
 }
