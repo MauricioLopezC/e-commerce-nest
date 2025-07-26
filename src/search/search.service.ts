@@ -8,6 +8,10 @@ export class SearchService {
   constructor(private prisma: PrismaService) { }
 
   async findByName(searchDto: SearchDto) {
+
+    const limit = searchDto.limit
+    const page = searchDto.page
+    const offset = (page - 1) * limit //for pagination offset
     const productName = searchDto.productName.toLowerCase()
     const products = await this.prisma.product.findMany({
       where: {
@@ -17,9 +21,10 @@ export class SearchService {
       },
       include: {
         images: true
-      }
+      },
+      skip: offset,
+      take: limit
     })
-    console.log(products)
     return products
   }
 
