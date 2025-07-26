@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Query, ConflictException, NotFoundException } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { OwnGuard } from '../guards/own.guard';
 import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
+import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
+import { NotFoundError } from 'src/common/errors/not-found-error';
 
 @UseGuards(OwnGuard)
 @Controller('users/:userId/favorites')
@@ -11,8 +13,12 @@ export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) { }
 
   @Post()
-  create(@Param('userId', ParseIntPipe) userId: number, @Body() createFavoriteDto: CreateFavoriteDto) {
-    return this.favoritesService.create(userId, createFavoriteDto);
+  async create(@Param('userId', ParseIntPipe) userId: number, @Body() createFavoriteDto: CreateFavoriteDto) {
+    try {
+      return await this.favoritesService.create(userId, createFavoriteDto);
+    } catch (error) {
+      if (error instanceof AlreadyIncludedError) throw new ConflictException(error.message)
+    }
   }
 
   @Get()
@@ -21,30 +27,41 @@ export class FavoritesController {
   }
 
   @Get(':id')
-  findOne(
+  async findOne(
     @Param('userId', ParseIntPipe) userId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.favoritesService.findOne(userId, id);
+    try {
+      return this.favoritesService.findOne(userId, id);
+    } catch (error) {
+      if (error instanceof NotFoundError) throw new NotFoundException(error.message)
+    }
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('userId', ParseIntPipe) userId: number,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateFavoriteDto: UpdateFavoriteDto
   ) {
-    return this.favoritesService.update(userId, id, updateFavoriteDto);
+    try {
+      return await this.favoritesService.update(userId, id, updateFavoriteDto);
+    } catch (error) {
+      if (error instanceof NotFoundError) throw new NotFoundException(error.message)
+    }
   }
 
   // @Delete()
   // removeWithOutUserId(@Param('userId', ParseIntPipe) userId: number) {
-  //   //TODO: move this one method to another controller
   //   return this.favoritesService.removeByProductId(userId, ) 
   // }
 
   @Delete(':id')
-  remove(@Param('userId', ParseIntPipe) userId: number, @Param('id', ParseIntPipe) id: number) {
-    return this.favoritesService.remove(userId, id);
+  async remove(@Param('userId', ParseIntPipe) userId: number, @Param('id', ParseIntPipe) id: number) {
+    try {
+      return await this.favoritesService.remove(userId, id);
+    } catch (error) {
+      if (error instanceof NotFoundError) throw new NotFoundException(error.message)
+    }
   }
 }

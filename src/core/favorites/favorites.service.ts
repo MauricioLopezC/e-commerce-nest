@@ -1,27 +1,25 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Favorite } from '@prisma/client';
 import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { NotFoundError } from 'src/common/errors/not-found-error';
+import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
 
 @Injectable()
 export class FavoritesService {
   constructor(private prisma: PrismaService) { }
 
   async create(userId: number, createFavoriteDto: CreateFavoriteDto) {
-    //TODO: evitar que se agregen productsIds de productos que no existan
-    //si bien esto deberia controlarlo la app frontend, algun usuario podria llamar
-    //a la api con fetch desde consola y crear favoritos con productos que 
-    //no existan
-    //TODO: don't throw HTTP exception here, only business logic errors here
     try {
       const createdFavorite = await this.prisma.favorite.create({
         data: { userId: userId, productId: createFavoriteDto.productId }
       })
       return createdFavorite
     } catch (error) {
-      throw new ConflictException('The product is already included')
+      throw new AlreadyIncludedError('The product is already included')
     }
   }
 
@@ -60,40 +58,55 @@ export class FavoritesService {
   }
 
   async findOne(userId: number, favoriteId: number): Promise<Favorite> {
-    return await this.prisma.favorite.findUnique({
-      where: {
-        userId: userId,
-        id: favoriteId
+    try {
+      return await this.prisma.favorite.findUnique({
+        where: {
+          userId: userId,
+          id: favoriteId
+        }
+      });
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2001') {
+        throw new NotFoundError('Favorite not found')
       }
-    });
+    }
   }
 
   async update(userId: number, productId: number, updateFavoriteDto: UpdateFavoriteDto) {
-    //TODO: add Custom error that indicate favorite does not exist
-    return await this.prisma.favorite.update({
-      where: {
-        productId_userId: {
-          userId,
-          productId
-        }
-      },
-      data: updateFavoriteDto
-    });
+    try {
+      return await this.prisma.favorite.update({
+        where: {
+          productId_userId: {
+            userId,
+            productId
+          }
+        },
+        data: updateFavoriteDto
+      });
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2001') {
+        throw new NotFoundError('Favorite not found')
+      }
+    }
   }
 
   async remove(userId: number, id: number) {
-    //TODO: add Custom error that indicate favorite does not exist
-    const deleted = await this.prisma.favorite.delete({
-      where: {
-        id,
-        userId
+    try {
+      const deleted = await this.prisma.favorite.delete({
+        where: {
+          id,
+          userId
+        }
+      })
+      return deleted
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2001') {
+        throw new NotFoundError('Favorite not found')
       }
-    })
-    return deleted
+    }
   }
 
   async removeByProductId(userId: number, productId: number) {
-    //NOTE: way to use unique constraint
     const deleted = await this.prisma.favorite.delete({
       where: {
         productId_userId: {
@@ -103,7 +116,6 @@ export class FavoritesService {
       }
     })
     return deleted
-
   }
 
 
