@@ -58,18 +58,17 @@ export class FavoritesService {
   }
 
   async findOne(userId: number, favoriteId: number): Promise<Favorite> {
-    try {
-      return await this.prisma.favorite.findUnique({
-        where: {
-          userId: userId,
-          id: favoriteId
-        }
-      });
-    } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2001') {
-        throw new NotFoundError('Favorite not found')
+    const favorite = await this.prisma.favorite.findUnique({
+      where: {
+        userId: userId,
+        id: favoriteId
       }
+    });
+
+    if (!favorite) {
+      throw new NotFoundError('Favorite not found')
     }
+    return favorite
   }
 
   async update(userId: number, productId: number, updateFavoriteDto: UpdateFavoriteDto) {
