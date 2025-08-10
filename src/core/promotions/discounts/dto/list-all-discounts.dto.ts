@@ -1,26 +1,24 @@
+import { DiscountType } from "@prisma/client";
 import { Transform } from "class-transformer";
-import { IsArray, IsDate, IsDateString, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
-import { OrderStatus } from "../enums/order-status.enum";
+import { IsArray, IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, Validate, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
+import { ApplicableTo } from "./update-discount.dto";
 
-/**
- * class used for validate orderBy query param for check only allowedValues
- * use this validation in all list-all-entities DTO's
-  */
+
 @ValidatorConstraint({ name: 'isValidOrderBy', async: false })
 class IsValidOrderByConstraint implements ValidatorConstraintInterface {
-  private readonly allowedValues = ['total', 'createdAt', 'unitsOnOrder'];
+  private readonly allowedValues = ['value', 'createdAt'];
 
   validate(values: string[]): boolean {
     return values.every((value) => this.allowedValues.includes(value) || this.allowedValues.includes(value.slice(1)));
   }
 
   defaultMessage(): string {
-    return `Each value in orderby must be one of: total, createdAt, unitsOnOrder.`;
+    return `Each value in orderby must be one of: ${this.allowedValues.toString()}.`;
   }
 }
 
-export class ListAllOrdersDto {
-  //pagination section
+export class ListAllDiscountsDto {
+  //pagination secction
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -37,29 +35,26 @@ export class ListAllOrdersDto {
   @Transform(({ value }) => Number(value))
   page: number = 1;
 
-  //filters section
+  //filters seccion
+  @IsOptional()
+  @Transform(({ value }) => value === 'true') //el atributo viene como un string y lo pasamos a number
+  @IsBoolean()
+  isActive: boolean;
+
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @IsEnum(OrderStatus)
-  status: OrderStatus
+  @IsEnum(DiscountType)
+  discountType: DiscountType
 
+
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  email: string //search for emails 
-
-  @IsOptional()
-  @Transform(({ value }) => new Date(value))
-  @IsDate()
-  startDate: Date;
-
-  @IsOptional()
-  @Transform(({ value }) => new Date(value))
-  @IsDate()
-  endDate: Date;
+  @IsNotEmpty()
+  @IsEnum(ApplicableTo)
+  applicableTo: ApplicableTo
 
 
-  //order secction
   @IsOptional()
   @Transform(({ value }) =>
     Array.isArray(value) ? value : [value]

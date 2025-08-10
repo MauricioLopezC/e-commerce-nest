@@ -63,11 +63,13 @@ export class CreateDiscountDto {
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
+  @IsPositive({ each: true })
   products: number[]
 
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
+  @IsPositive({ each: true })
   categories: number[]
 }
 

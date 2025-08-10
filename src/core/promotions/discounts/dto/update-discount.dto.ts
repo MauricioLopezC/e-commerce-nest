@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer"
-import { IsArray, IsBoolean, IsDate, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength } from "class-validator"
+import { IsArray, IsBoolean, IsDate, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min } from "class-validator"
 
 export enum DiscountType {
   PERCENTAGE = 'PERCENTAGE',
@@ -32,7 +32,7 @@ export class UpdateDiscountDto {
   discountType: DiscountType
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   value: number
 
@@ -53,7 +53,7 @@ export class UpdateDiscountDto {
 
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
-  @IsPositive()
+  @Min(0)
   orderThreshold: number
 
   @IsOptional()
@@ -66,5 +66,21 @@ export class UpdateDiscountDto {
   @IsOptional()
   @IsBoolean()
   isActive: boolean = true
+
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @IsPositive({ each: true })
+  @IsInt({ each: true })
+  products: number[]
+
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @IsPositive({ each: true })
+  @IsInt({ each: true })
+  categories: number[]
 }
 

@@ -1,14 +1,13 @@
-import { BadRequestException, Body, Controller, Delete, Get, InternalServerErrorException, MethodNotAllowedException, NotFoundException, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, InternalServerErrorException, MethodNotAllowedException, NotFoundException, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { DiscountsService } from './discounts.service';
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import { Role } from 'src/auth/enums/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UpdateDiscountDto } from './dto/update-discount.dto';
 import { PublicRoute } from 'src/auth/decorators/public-routes.decorator';
-import { ConnectOrDisconectProductsDto, ConnectOrDisconnectCategoriesDto } from './dto/connect-relations.dto';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { ValidationError } from 'src/common/errors/validation-error';
-import { NotAllowedError } from 'src/common/errors/not-allowed-error';
+import { ListAllDiscountsDto } from './dto/list-all-discounts.dto';
 
 @Controller('promotions/discounts')
 export class DiscountsController {
@@ -27,8 +26,8 @@ export class DiscountsController {
 
   @PublicRoute()
   @Get()
-  async findAll() {
-    return await this.discountsService.findAll()
+  async findAll(@Query() query: ListAllDiscountsDto) {
+    return await this.discountsService.findAll(query)
   }
 
   @Get(':id')
@@ -36,7 +35,8 @@ export class DiscountsController {
     try {
       return await this.discountsService.findOne(id)
     } catch (error) {
-      throw new NotFoundException('discount not found')
+      if (error instanceof NotFoundError) throw new NotFoundException('discount not found')
+      throw new InternalServerErrorException("server error")
     }
   }
 
@@ -47,6 +47,8 @@ export class DiscountsController {
       return await this.discountsService.update(id, updateDiscountDto)
     } catch (error) {
       if (error instanceof ValidationError) throw new BadRequestException(error.message)
+      console.log(error)
+      throw new InternalServerErrorException("Server Error, try again later!")
     }
   }
 
@@ -59,54 +61,5 @@ export class DiscountsController {
       if (error instanceof NotFoundError) throw new NotFoundException(error.message)
     }
   }
-
-  @Roles(Role.Admin)
-  @Post(':id/products')
-  async connectProducts(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() connectProductDto: ConnectOrDisconectProductsDto
-  ) {
-    console.log(connectProductDto)
-    try {
-      return await this.discountsService.connectProducts(id, connectProductDto)
-    } catch (error) {
-      if (error instanceof NotFoundError) throw new NotFoundException(error.message)
-      if (error instanceof NotAllowedError) throw new MethodNotAllowedException(error.message)
-    }
-  }
-
-  @Roles(Role.Admin)
-  @Post(':id/categories')
-  async connectCateogories(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() connectCateogoriesDto: ConnectOrDisconnectCategoriesDto
-  ) {
-    try {
-      return await this.discountsService.connectCategories(id, connectCateogoriesDto)
-    } catch (error) {
-      if (error instanceof NotFoundError) throw new NotFoundException(error.message)
-
-      if (error instanceof NotAllowedError) throw new MethodNotAllowedException(error.message)
-    }
-  }
-
-  @Roles(Role.Admin)
-  @Delete(':id/products')
-  async disconnectProducts(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() disconnectProductsDto: ConnectOrDisconectProductsDto
-  ) {
-    return await this.discountsService.disconnectProducts(id, disconnectProductsDto)
-  }
-
-  @Roles(Role.Admin)
-  @Delete(':id/categories')
-  async disconnectCategories(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() disconnectCategoriesDto: ConnectOrDisconnectCategoriesDto
-  ) {
-    return await this.discountsService.disconnectCategories(id, disconnectCategoriesDto)
-  }
-
 }
 
