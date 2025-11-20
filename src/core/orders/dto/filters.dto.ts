@@ -1,3 +1,3 @@
 export class OrderFilters {
-  status?: string
+  status?: string;
 }

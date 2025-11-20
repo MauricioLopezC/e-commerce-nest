@@ -11,11 +11,10 @@ export class MailsService {
   private apiInstance: brevo.TransactionalEmailsApi;
   constructor(
     private readonly config: ConfigService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
   ) {
     this.apiInstance = new brevo.TransactionalEmailsApi();
-    this.apiInstance.setApiKey(0, config.get<'string'>('BREVO_API_KEY'))
-
+    this.apiInstance.setApiKey(0, config.get<'string'>('BREVO_API_KEY'));
   }
 
   async sendOrderConfirmation(to: string, orderId: string): Promise<boolean> {
@@ -28,7 +27,7 @@ export class MailsService {
     `;
     sendSmtpEmail.sender = {
       email: this.config.get<string>('GMAIL_USER'),
-      name: 'MartinaML'
+      name: 'MartinaML',
     };
     sendSmtpEmail.to = [{ email: to }];
 
@@ -47,21 +46,21 @@ export class MailsService {
 
     const order = await this.prisma.order.findUnique({
       where: {
-        id: event.orderId
-      }
-    })
+        id: event.orderId,
+      },
+    });
 
     const orderItems = await this.prisma.orderItem.findMany({
       where: {
-        orderId: event.orderId
+        orderId: event.orderId,
       },
       include: {
-        product: true
-      }
-    })
-    const itemsList = orderItems.map((item) => (
-      `<li>${item.product.name} x ${item.quantity}</li>`
-    ))
+        product: true,
+      },
+    });
+    const itemsList = orderItems.map(
+      (item) => `<li>${item.product.name} x ${item.quantity}</li>`,
+    );
 
     sendSmtpEmail.subject = '✅ ¡Orden confirmada!';
     sendSmtpEmail.htmlContent = `
@@ -76,14 +75,14 @@ export class MailsService {
       `;
     sendSmtpEmail.sender = {
       email: this.config.get<string>('GMAIL_USER'),
-      name: 'MartinaML'
+      name: 'MartinaML',
     };
 
     const user = await this.prisma.user.findUnique({
       where: {
-        id: event.userId
-      }
-    })
+        id: event.userId,
+      },
+    });
 
     sendSmtpEmail.to = [{ email: user.email }];
 
@@ -92,11 +91,5 @@ export class MailsService {
     } catch (error) {
       console.error('Error al enviar email:', error);
     }
-
   }
-
-
-
-
 }
-

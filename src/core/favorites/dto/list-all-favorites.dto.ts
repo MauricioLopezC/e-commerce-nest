@@ -1,5 +1,12 @@
-import { Transform } from "class-transformer";
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from "class-validator";
+import { Transform } from 'class-transformer';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class ListAllFavoritesDto {
   @IsOptional()
@@ -18,11 +25,9 @@ export class ListAllFavoritesDto {
   @Transform(({ value }) => Number(value))
   page: number = 1;
 
-
   @IsOptional()
   @IsInt()
   @IsNotEmpty()
   @Transform(({ value }) => Number(value))
   productId: number;
 }
-

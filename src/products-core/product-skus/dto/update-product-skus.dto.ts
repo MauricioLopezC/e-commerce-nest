@@ -1,6 +1,5 @@
-
-import { Transform } from "class-transformer";
-import { IsInt, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { Transform } from 'class-transformer';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class UpdateProductSkusDto {
   @IsString()
   @IsNotEmpty()

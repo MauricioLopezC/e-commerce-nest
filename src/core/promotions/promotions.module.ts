@@ -8,6 +8,6 @@ import { DiscountsController } from './discounts/discounts.controller';
   providers: [DiscountsService, DiscountsCodesService],
   imports: [PrismaModule],
   exports: [DiscountsCodesService, DiscountsService],
-  controllers: [DiscountsController]
+  controllers: [DiscountsController],
 })
-export class PromotionsModule { }
+export class PromotionsModule {}

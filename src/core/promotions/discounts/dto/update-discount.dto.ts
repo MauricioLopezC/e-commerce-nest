@@ -1,15 +1,28 @@
-import { Transform } from "class-transformer"
-import { IsArray, IsBoolean, IsDate, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min } from "class-validator"
+import { Transform } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export enum DiscountType {
   PERCENTAGE = 'PERCENTAGE',
-  FIXED = 'FIXED'
+  FIXED = 'FIXED',
 }
 
 export enum ApplicableTo {
   PRODUCT = 'PRODUCT',
   CATEGORY = 'CATEGORY',
-  GENERAL = 'GENERAL'
+  GENERAL = 'GENERAL',
 }
 
 export class UpdateDiscountDto {
@@ -17,70 +30,67 @@ export class UpdateDiscountDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  name: string
+  name: string;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
-  description: string
+  description: string;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @IsEnum(DiscountType)
-  discountType: DiscountType
+  discountType: DiscountType;
 
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
-  value: number
+  value: number;
 
   @IsOptional()
-  @Transform(({ value }) => (new Date(value)))
+  @Transform(({ value }) => new Date(value))
   @IsDate()
-  startDate: Date
+  startDate: Date;
 
   @IsOptional()
-  @Transform(({ value }) => (new Date(value)))
+  @Transform(({ value }) => new Date(value))
   @IsDate()
-  endDate: Date
+  endDate: Date;
 
   @IsOptional()
   @IsString()
   @IsEnum(ApplicableTo)
-  applicableTo: ApplicableTo
+  applicableTo: ApplicableTo;
 
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  orderThreshold: number
+  orderThreshold: number;
 
   @IsOptional()
   @IsOptional()
   @IsInt()
   @IsPositive()
-  maxUses: number
+  maxUses: number;
 
   @IsOptional()
   @IsOptional()
   @IsBoolean()
-  isActive: boolean = true
-
-
-  @IsOptional()
-  @IsArray()
-  @IsNumber({}, { each: true })
-  @IsPositive({ each: true })
-  @IsInt({ each: true })
-  products: number[]
-
+  isActive: boolean = true;
 
   @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @IsInt({ each: true })
-  categories: number[]
+  products: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @IsPositive({ each: true })
+  @IsInt({ each: true })
+  categories: number[];
 }
-

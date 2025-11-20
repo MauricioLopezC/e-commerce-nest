@@ -1,11 +1,19 @@
-import { Transform } from "class-transformer";
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, MaxLength, Min } from "class-validator";
+import { Transform } from 'class-transformer';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class SearchDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  productName: string
+  productName: string;
 
   //pagination secction
   @IsOptional()
@@ -23,5 +31,4 @@ export class SearchDto {
   @IsNotEmpty()
   @Transform(({ value }) => Number(value))
   page: number = 1;
-
 }

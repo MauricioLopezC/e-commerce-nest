@@ -18,12 +18,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     LogoutService,
     {
       provide: APP_GUARD,
-      useClass: AuthGuard
-    },//now the AuthGuard is used for all endpoints of the application
+      useClass: AuthGuard,
+    }, //now the AuthGuard is used for all endpoints of the application
     {
       provide: APP_GUARD,
-      useClass: RolesGuard
-    } //same with roles guard with verify if user has required role for use endpoint
+      useClass: RolesGuard,
+    }, //same with roles guard with verify if user has required role for use endpoint
   ],
   imports: [
     UsersModule,
@@ -33,12 +33,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('SECRET'),
-        signOptions: { expiresIn: '1d' }
-      })
-
+        signOptions: { expiresIn: '1d' },
+      }),
     }),
-    CartModule
+    CartModule,
   ],
-  controllers: [AuthController]
+  controllers: [AuthController],
 })
-export class AuthModule { }
+export class AuthModule {}

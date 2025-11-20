@@ -1,5 +1,4 @@
-import { Cart } from "@prisma/client";
-import { IsInt, IsPositive } from "class-validator";
+import { IsInt, IsPositive } from 'class-validator';
 export class CreateCartDto {
   @IsInt()
   @IsPositive()

@@ -8,32 +8,29 @@ import { GetSalesByProductDto } from './dto/get-sales-by-product.dto';
 
 @Controller('statistics')
 export class StatisticsController {
-  constructor(private readonly statisticsService: StatisticsService) { }
-
+  constructor(private readonly statisticsService: StatisticsService) {}
 
   @Roles(Role.Admin)
   @Get('sales/monthly')
   async getTotalSalesByMonth(@Query() query: GetTotalSalesByMonthDto) {
-    return await this.statisticsService.getTotalSalesByMonth(query)
+    return await this.statisticsService.getTotalSalesByMonth(query);
   }
 
   @Roles(Role.Admin)
   @Get('sales/by-user')
   async salesByUser() {
-    return await this.statisticsService.salesByUser()
+    return await this.statisticsService.salesByUser();
   }
 
   @Roles(Role.Admin)
   @Get('sales/by-category')
   async salesByCategory(@Query() query: GetSalesByCategoryDto) {
-    return await this.statisticsService.salesByCategory(query)
+    return await this.statisticsService.salesByCategory(query);
   }
 
   @Roles(Role.Admin)
   @Get('sales/by-product')
   async salesByProduct(@Query() query: GetSalesByProductDto) {
-    return await this.statisticsService.salesByProduct(query)
+    return await this.statisticsService.salesByProduct(query);
   }
-
 }
-

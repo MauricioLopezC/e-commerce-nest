@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsPositive, IsString } from "class-validator";
+import { IsInt, IsPositive } from 'class-validator';
 export class CreateCartItemDto {
   @IsInt()
   productId: number;

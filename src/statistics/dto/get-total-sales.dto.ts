@@ -1,5 +1,5 @@
-import { Transform } from "class-transformer";
-import { IsDate } from "class-validator";
+import { Transform } from 'class-transformer';
+import { IsDate } from 'class-validator';
 
 export class GetTotalSalesByMonthDto {
   @Transform(({ value }) => new Date(value))

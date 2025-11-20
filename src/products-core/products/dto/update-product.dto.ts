@@ -1,5 +1,11 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { Sex } from "../enums/sex.enum";
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
+import { Sex } from '../enums/sex.enum';
 export class UpdateProductDto {
   @IsString()
   @IsNotEmpty()
@@ -25,5 +31,4 @@ export class UpdateProductDto {
   @IsNotEmpty()
   @IsOptional()
   sex: Sex;
-
 }

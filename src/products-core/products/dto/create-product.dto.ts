@@ -1,5 +1,12 @@
-import { IsString, IsNotEmpty, IsNumber, IsPositive, IsArray, Min } from "class-validator";
-import { Sex } from "../enums/sex.enum";
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsArray,
+  Min,
+} from 'class-validator';
+import { Sex } from '../enums/sex.enum';
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
@@ -13,11 +20,10 @@ export class CreateProductDto {
   @IsNotEmpty()
   description: string;
 
-
   @IsArray()
   @IsNumber({}, { each: true })
   @Min(0, { each: true })
-  categories: number[]
+  categories: number[];
 
   @IsString()
   @IsNotEmpty()

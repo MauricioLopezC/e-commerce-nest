@@ -6,8 +6,8 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 @Module({
   controllers: [SearchController],
   providers: [SearchService],
-  imports: [PrismaModule]
+  imports: [PrismaModule],
 })
-// to implment search functionality switch from sqlte to postgres, which suportt full text search 
+// to implment search functionality switch from sqlte to postgres, which suportt full text search
 // or fuzzy find search
-export class SearchModule { }
+export class SearchModule {}

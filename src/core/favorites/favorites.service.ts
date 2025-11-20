@@ -10,81 +10,88 @@ import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
 
 @Injectable()
 export class FavoritesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(userId: number, createFavoriteDto: CreateFavoriteDto) {
     try {
       const createdFavorite = await this.prisma.favorite.create({
-        data: { userId: userId, productId: createFavoriteDto.productId }
-      })
-      return createdFavorite
+        data: { userId: userId, productId: createFavoriteDto.productId },
+      });
+      return createdFavorite;
     } catch (error) {
-      throw new AlreadyIncludedError('The product is already included')
+      throw new AlreadyIncludedError('The product is already included');
     }
   }
 
   async findAll(userId: number, query: ListAllFavoritesDto) {
     //TODO: aply filters or query to aggregate too
-    const limit = query.limit
-    const page = query.page
-    const offset = (page - 1) * limit //for pagination offset
-    delete query.page
-    delete query.limit
+    const limit = query.limit;
+    const page = query.page;
+    const offset = (page - 1) * limit; //for pagination offset
+    delete query.page;
+    delete query.limit;
 
     const favorites = await this.prisma.favorite.findMany({
       skip: offset,
       take: limit,
       where: {
         ...query,
-        userId: userId
+        userId: userId,
       },
       include: {
         product: {
           include: {
-            images: true
-          }
-        }
-      }
-    })
+            images: true,
+          },
+        },
+      },
+    });
     const aggregate = await this.prisma.favorite.aggregate({
       //where: query,
-      _count: true
-    })
+      _count: true,
+    });
 
     return {
       favorites,
-      aggregate
-    }
+      aggregate,
+    };
   }
 
   async findOne(userId: number, favoriteId: number): Promise<Favorite> {
     const favorite = await this.prisma.favorite.findUnique({
       where: {
         userId: userId,
-        id: favoriteId
-      }
+        id: favoriteId,
+      },
     });
 
     if (!favorite) {
-      throw new NotFoundError('Favorite not found')
+      throw new NotFoundError('Favorite not found');
     }
-    return favorite
+    return favorite;
   }
 
-  async update(userId: number, productId: number, updateFavoriteDto: UpdateFavoriteDto) {
+  async update(
+    userId: number,
+    productId: number,
+    updateFavoriteDto: UpdateFavoriteDto,
+  ) {
     try {
       return await this.prisma.favorite.update({
         where: {
           productId_userId: {
             userId,
-            productId
-          }
+            productId,
+          },
         },
-        data: updateFavoriteDto
+        data: updateFavoriteDto,
       });
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2001') {
-        throw new NotFoundError('Favorite not found')
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2001'
+      ) {
+        throw new NotFoundError('Favorite not found');
       }
     }
   }
@@ -94,13 +101,16 @@ export class FavoritesService {
       const deleted = await this.prisma.favorite.delete({
         where: {
           id,
-          userId
-        }
-      })
-      return deleted
+          userId,
+        },
+      });
+      return deleted;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2001') {
-        throw new NotFoundError('Favorite not found')
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2001'
+      ) {
+        throw new NotFoundError('Favorite not found');
       }
     }
   }
@@ -110,12 +120,10 @@ export class FavoritesService {
       where: {
         productId_userId: {
           productId,
-          userId
-        }
-      }
-    })
-    return deleted
+          userId,
+        },
+      },
+    });
+    return deleted;
   }
-
-
 }

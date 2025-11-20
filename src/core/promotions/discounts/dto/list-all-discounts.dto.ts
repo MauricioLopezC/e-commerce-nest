@@ -1,15 +1,31 @@
-import { DiscountType } from "@prisma/client";
-import { Transform } from "class-transformer";
-import { IsArray, IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, Validate, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
-import { ApplicableTo } from "./update-discount.dto";
-
+import { DiscountType } from '@prisma/client';
+import { Transform } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
+import { ApplicableTo } from './update-discount.dto';
 
 @ValidatorConstraint({ name: 'isValidOrderBy', async: false })
 class IsValidOrderByConstraint implements ValidatorConstraintInterface {
   private readonly allowedValues = ['value', 'createdAt'];
 
   validate(values: string[]): boolean {
-    return values.every((value) => this.allowedValues.includes(value) || this.allowedValues.includes(value.slice(1)));
+    return values.every(
+      (value) =>
+        this.allowedValues.includes(value) ||
+        this.allowedValues.includes(value.slice(1)),
+    );
   }
 
   defaultMessage(): string {
@@ -45,20 +61,16 @@ export class ListAllDiscountsDto {
   @IsString()
   @IsNotEmpty()
   @IsEnum(DiscountType)
-  discountType: DiscountType
-
+  discountType: DiscountType;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @IsEnum(ApplicableTo)
-  applicableTo: ApplicableTo
-
+  applicableTo: ApplicableTo;
 
   @IsOptional()
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value : [value]
-  ) // Asegurarse de que siempre sea un array
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value])) // Asegurarse de que siempre sea un array
   @IsArray()
   @IsString({ each: true })
   @Validate(IsValidOrderByConstraint)

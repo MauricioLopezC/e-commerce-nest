@@ -6,20 +6,19 @@ import { query } from 'express';
 
 @Controller('search/products')
 export class SearchController {
-  constructor(private searchService: SearchService) { }
+  constructor(private searchService: SearchService) {}
 
   @Get()
   @PublicRoute()
   async searchProduct(@Query() query: SearchDto) {
-    const products = await this.searchService.findByName(query)
-    return products
+    const products = await this.searchService.findByName(query);
+    return products;
   }
 
   @Get('test')
   @PublicRoute()
   async searchText(@Query() query: SearchDto) {
     const result = await this.searchService.findByNameOrDescription(query);
-    return { result }
+    return { result };
   }
-
 }

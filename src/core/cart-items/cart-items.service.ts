@@ -10,46 +10,52 @@ import { NotFoundError } from 'src/common/errors/not-found-error';
 
 @Injectable()
 export class CartItemsService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
-  async create(cartId: number, createCartItemDto: CreateCartItemDto): Promise<CartItem> {
+  async create(
+    cartId: number,
+    createCartItemDto: CreateCartItemDto,
+  ): Promise<CartItem> {
     //OPTIMIZE: get product sku to check thath item exist could be unnecessary because
-    //if productSku doesn't exist, we are violating the integrity of the DB and 
+    //if productSku doesn't exist, we are violating the integrity of the DB and
     //prisma will throw foreign key constraint error, same for product
     //BUT in this case we need to check productsku is correct before create item,
     //because we need to compare cartItemQuantity > productSku.quantity
-    const cartItemQuantity = createCartItemDto.quantity
+    const cartItemQuantity = createCartItemDto.quantity;
     const productSku = await this.prisma.productSku.findUnique({
       where: {
-        id: createCartItemDto.productSkuId
-      }
-    })
+        id: createCartItemDto.productSkuId,
+      },
+    });
     if (!productSku) {
-      throw new NotFoundError("product sku does not exist")
+      throw new NotFoundError('product sku does not exist');
     }
 
     const product = await this.prisma.product.findUnique({
       where: {
-        id: createCartItemDto.productId
-      }
-    })
-    if (!product) throw new NotFoundError("product does not exist")
+        id: createCartItemDto.productId,
+      },
+    });
+    if (!product) throw new NotFoundError('product does not exist');
 
-    console.log(cartItemQuantity, productSku.quantity)
+    console.log(cartItemQuantity, productSku.quantity);
     if (cartItemQuantity > productSku.quantity) {
-      throw new StockError("There is not enough stock")
+      throw new StockError('There is not enough stock');
     }
 
     try {
       const newCartItem = await this.prisma.cartItem.create({
-        data: { ...createCartItemDto, cartId }
-      })
-      return newCartItem
+        data: { ...createCartItemDto, cartId },
+      });
+      return newCartItem;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
         //NOTE: we could include that when the product is already included in cart, increment
         //the stock instead throw error
-        throw new AlreadyIncludedError("The product is already included")
+        throw new AlreadyIncludedError('The product is already included');
       }
     }
   }
@@ -57,53 +63,57 @@ export class CartItemsService {
   async findAll(cartId: number): Promise<CartItem[]> {
     const cartItems = await this.prisma.cartItem.findMany({
       where: {
-        cartId
+        cartId,
       },
       include: {
         product: {
           include: {
-            images: true
-          }
+            images: true,
+          },
         },
-        productSku: true
+        productSku: true,
       },
       orderBy: {
-        createdAt: 'desc'
-      }
-    })
-    return cartItems
+        createdAt: 'desc',
+      },
+    });
+    return cartItems;
   }
 
   async findOne(cartId: number, id: number): Promise<CartItem> {
     const cartItem = await this.prisma.cartItem.findUnique({
       where: {
         id,
-        cartId
-      }
-    })
-    return cartItem
+        cartId,
+      },
+    });
+    return cartItem;
   }
 
-  async update(cartId: number, id: number, updateCartItemDto: UpdateCartItemDto): Promise<CartItem> {
+  async update(
+    cartId: number,
+    id: number,
+    updateCartItemDto: UpdateCartItemDto,
+  ): Promise<CartItem> {
     // only update quantity is allowed
     if (updateCartItemDto.quantity) {
-      const thisCartItem = await this.findOne(cartId, id)
+      const thisCartItem = await this.findOne(cartId, id);
 
-      if (!thisCartItem) throw new NotFoundError('Cart item not found')
+      if (!thisCartItem) throw new NotFoundError('Cart item not found');
 
-      const newQuantity = updateCartItemDto.quantity
+      const newQuantity = updateCartItemDto.quantity;
       const productSku = await this.prisma.productSku.findUnique({
         where: {
-          id: thisCartItem.productSkuId
-        }
-      })
+          id: thisCartItem.productSkuId,
+        },
+      });
 
       if (!productSku) {
-        throw new NotFoundError("product sku does not exist")
+        throw new NotFoundError('product sku does not exist');
       }
 
       if (newQuantity > productSku.quantity) {
-        throw new StockError("There is not enough stock")
+        throw new StockError('There is not enough stock');
       }
     }
 
@@ -111,13 +121,13 @@ export class CartItemsService {
       const updatedCartItem = await this.prisma.cartItem.update({
         where: {
           id,
-          cartId
+          cartId,
         },
-        data: updateCartItemDto
-      })
-      return updatedCartItem
+        data: updateCartItemDto,
+      });
+      return updatedCartItem;
     } catch (error) {
-      throw new NotFoundError("Cart item not found")
+      throw new NotFoundError('Cart item not found');
     }
   }
 
@@ -126,13 +136,12 @@ export class CartItemsService {
       const removedCartItem = await this.prisma.cartItem.delete({
         where: {
           id,
-          cartId
-        }
-      })
-      return removedCartItem
+          cartId,
+        },
+      });
+      return removedCartItem;
     } catch (error) {
-      throw new NotFoundError("Cart item not found")
+      throw new NotFoundError('Cart item not found');
     }
   }
-
 }

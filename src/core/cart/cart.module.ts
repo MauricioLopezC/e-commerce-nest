@@ -8,6 +8,6 @@ import { PromotionsModule } from '../promotions/promotions.module';
   controllers: [CartController],
   providers: [CartService],
   imports: [PrismaModule, PromotionsModule],
-  exports: [CartService]
+  exports: [CartService],
 })
-export class CartModule { }
+export class CartModule {}

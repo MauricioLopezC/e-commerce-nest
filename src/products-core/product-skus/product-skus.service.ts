@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBatchProductSkusDto, CreateProductSkusDto } from './dto/create-product-skus.dto';
+import {
+  CreateBatchProductSkusDto,
+  CreateProductSkusDto,
+} from './dto/create-product-skus.dto';
 import { UpdateProductSkusDto } from './dto/update-product-skus.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, ProductSku } from '@prisma/client';
@@ -7,72 +10,86 @@ import { Prisma, ProductSku } from '@prisma/client';
 @Injectable()
 export class ProductSkusService {
   //TODO: Add array image attribute in UpdateProductSkusDto
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
-  async create(productId: number, createProductSkusDto: CreateProductSkusDto): Promise<ProductSku> {
+  async create(
+    productId: number,
+    createProductSkusDto: CreateProductSkusDto,
+  ): Promise<ProductSku> {
     const productSku = await this.prisma.productSku.create({
       data: {
         productId: productId,
         size: createProductSkusDto.size,
         color: createProductSkusDto.color,
-        quantity: createProductSkusDto.quantity
-      }
-    })
-    return productSku
+        quantity: createProductSkusDto.quantity,
+      },
+    });
+    return productSku;
   }
 
   async findAll(productId: number): Promise<ProductSku[]> {
     const skus = await this.prisma.productSku.findMany({
       where: {
-        productId
+        productId,
       },
       include: {
-        images: true
-      }
-    })
-    return skus
+        images: true,
+      },
+    });
+    return skus;
   }
 
   async findOne(productId: number, id: number): Promise<ProductSku> {
     const sku = await this.prisma.productSku.findUnique({
       where: {
         id,
-        productId
+        productId,
       },
       include: {
-        images: true
-      }
-    })
-    return sku
+        images: true,
+      },
+    });
+    return sku;
   }
 
-  async update(productId: number, id: number, updateProductSkusDto: UpdateProductSkusDto): Promise<ProductSku> {
+  async update(
+    productId: number,
+    id: number,
+    updateProductSkusDto: UpdateProductSkusDto,
+  ): Promise<ProductSku> {
     const updatedSku = await this.prisma.productSku.update({
       where: {
         id,
-        productId
+        productId,
       },
-      data: updateProductSkusDto
-    })
-    return updatedSku
+      data: updateProductSkusDto,
+    });
+    return updatedSku;
   }
 
   async remove(productId: number, id: number): Promise<ProductSku> {
     const deletedSku = await this.prisma.productSku.delete({
       where: {
         id,
-        productId
-      }
-    })
-    return deletedSku
+        productId,
+      },
+    });
+    return deletedSku;
   }
 
-  async batchCreate(productId: number, createProductSkusBatchDto: CreateBatchProductSkusDto) {
-    const data: Prisma.ProductSkuCreateManyInput[] = createProductSkusBatchDto.productSkus.map(item => ({ ...item, productId }))
+  async batchCreate(
+    productId: number,
+    createProductSkusBatchDto: CreateBatchProductSkusDto,
+  ) {
+    const data: Prisma.ProductSkuCreateManyInput[] =
+      createProductSkusBatchDto.productSkus.map((item) => ({
+        ...item,
+        productId,
+      }));
     const result = await this.prisma.productSku.createMany({
       data,
-      skipDuplicates: true
-    })
-    return result
+      skipDuplicates: true,
+    });
+    return result;
   }
 }

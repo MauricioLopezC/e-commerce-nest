@@ -10,9 +10,6 @@ import { OrderCreatedListener } from './listeners/order-created.listener';
 @Module({
   controllers: [OrdersController, OrdersAdminController],
   providers: [OrdersService, OrdersAdminService, OrderCreatedListener],
-  imports: [
-    PrismaModule,
-    PromotionsModule,
-  ]
+  imports: [PrismaModule, PromotionsModule],
 })
-export class OrdersModule { }
+export class OrdersModule {}

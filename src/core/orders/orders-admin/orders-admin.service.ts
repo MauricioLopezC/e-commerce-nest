@@ -6,38 +6,36 @@ import { NotFoundError } from 'src/common/errors/not-found-error';
 
 @Injectable()
 export class OrdersAdminService {
-
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAllOrders(query: ListAllOrdersDto) {
-
-    let filters = {
+    const filters = {
       status: query.status,
       user: {
         email: {
-          contains: query.email
-        }
+          contains: query.email,
+        },
       },
       createdAt: {
         gte: query.startDate,
-        lte: query.endDate
-      }
-    }
+        lte: query.endDate,
+      },
+    };
 
-    const limit = query.limit
-    const page = query.page
-    const offset = (page - 1) * limit
+    const limit = query.limit;
+    const page = query.page;
+    const offset = (page - 1) * limit;
     //creating where query object
 
     //creating prisma orderBy query object
     const orderBy = query.orderBy?.map((param) => {
-      let sortOrder = param.charAt(0) === '-' ? 'desc' : 'asc';
-      let formatedParam = param.charAt(0) === '-' ? param.slice(1) : param;
+      const sortOrder = param.charAt(0) === '-' ? 'desc' : 'asc';
+      const formatedParam = param.charAt(0) === '-' ? param.slice(1) : param;
       return {
-        [formatedParam]: sortOrder
-      }
-    })
-    console.log(orderBy)
+        [formatedParam]: sortOrder,
+      };
+    });
+    console.log(orderBy);
 
     const orders = await this.prisma.order.findMany({
       take: limit,
@@ -49,7 +47,7 @@ export class OrdersAdminService {
           include: {
             product: true,
             productSku: true,
-          }
+          },
         },
         payment: true,
         shipping: true,
@@ -61,14 +59,14 @@ export class OrdersAdminService {
             email: true,
             role: true,
             createdAt: true,
-            updatedAt: true
-          }
+            updatedAt: true,
+          },
         },
         discounts: {
-          include: { discount: true }
-        }
+          include: { discount: true },
+        },
       },
-    })
+    });
 
     const aggregate = await this.prisma.order.aggregate({
       where: filters,
@@ -77,32 +75,31 @@ export class OrdersAdminService {
         finalTotal: true,
       },
       _count: true,
-    })
+    });
 
     return {
       orders,
       metadata: { ...aggregate },
-    }
+    };
   }
 
   async findOne(id: number) {
     const order = await this.prisma.order.findUnique({
       where: {
-        id
-      }
-    })
-    if (!order) throw new NotFoundError(`Order with id:${id} not found`)
-    return order
+        id,
+      },
+    });
+    if (!order) throw new NotFoundError(`Order with id:${id} not found`);
+    return order;
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto) {
     const order = await this.prisma.order.update({
       where: {
-        id
+        id,
       },
-      data: updateOrderDto
-    })
-    return order
+      data: updateOrderDto,
+    });
+    return order;
   }
-
 }

@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -10,7 +22,7 @@ import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
 
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) { }
+  constructor(private readonly categoriesService: CategoriesService) {}
 
   @Roles(Role.Admin)
   @Post()
@@ -18,8 +30,9 @@ export class CategoriesController {
     try {
       return await this.categoriesService.create(createCategoryDto);
     } catch (error) {
-      if (error instanceof AlreadyIncludedError) throw new ConflictException(error.message)
-      throw new InternalServerErrorException(error.message)
+      if (error instanceof AlreadyIncludedError)
+        throw new ConflictException(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -35,17 +48,22 @@ export class CategoriesController {
     try {
       return await this.categoriesService.findOne(id);
     } catch (error) {
-      if (error instanceof NotFoundError) throw new NotFoundException(error.message)
+      if (error instanceof NotFoundError)
+        throw new NotFoundException(error.message);
     }
   }
 
   @Roles(Role.Admin)
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateCategoryDto: UpdateCategoryDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCategoryDto: UpdateCategoryDto,
+  ) {
     try {
       return this.categoriesService.update(+id, updateCategoryDto);
     } catch (error) {
-      if (error instanceof NotFoundError) throw new NotFoundException(error.message)
+      if (error instanceof NotFoundError)
+        throw new NotFoundException(error.message);
     }
   }
 
@@ -55,7 +73,8 @@ export class CategoriesController {
     try {
       return await this.categoriesService.remove(+id);
     } catch (error) {
-      if (error instanceof NotFoundError) throw new NotFoundException(error.message)
+      if (error instanceof NotFoundError)
+        throw new NotFoundException(error.message);
     }
   }
 }

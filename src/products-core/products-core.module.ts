@@ -6,6 +6,12 @@ import { ImagesModule } from './images/images.module';
 import { CategoriesModule } from './categories/categories.module';
 
 @Module({
-  imports: [ProductsModule, ProductSkusModule, CloudinaryModule, ImagesModule, CategoriesModule],
+  imports: [
+    ProductsModule,
+    ProductSkusModule,
+    CloudinaryModule,
+    ImagesModule,
+    CategoriesModule,
+  ],
 })
-export class ProductsCoreModule { }
+export class ProductsCoreModule {}

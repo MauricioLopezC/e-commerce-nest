@@ -1,17 +1,36 @@
-import { Transform } from "class-transformer";
-import { IsArray, IsDate, IsDateString, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
-import { OrderStatus } from "../enums/order-status.enum";
+import { Transform } from 'class-transformer';
+import {
+  IsArray,
+  IsDate,
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
+import { OrderStatus } from '../enums/order-status.enum';
 
 /**
  * class used for validate orderBy query param for check only allowedValues
  * use this validation in all list-all-entities DTO's
-  */
+ */
 @ValidatorConstraint({ name: 'isValidOrderBy', async: false })
 class IsValidOrderByConstraint implements ValidatorConstraintInterface {
   private readonly allowedValues = ['total', 'createdAt', 'unitsOnOrder'];
 
   validate(values: string[]): boolean {
-    return values.every((value) => this.allowedValues.includes(value) || this.allowedValues.includes(value.slice(1)));
+    return values.every(
+      (value) =>
+        this.allowedValues.includes(value) ||
+        this.allowedValues.includes(value.slice(1)),
+    );
   }
 
   defaultMessage(): string {
@@ -42,11 +61,11 @@ export class ListAllOrdersDto {
   @IsString()
   @IsNotEmpty()
   @IsEnum(OrderStatus)
-  status: OrderStatus
+  status: OrderStatus;
 
   @IsString()
   @IsOptional()
-  email: string //search for emails 
+  email: string; //search for emails
 
   @IsOptional()
   @Transform(({ value }) => new Date(value))
@@ -58,12 +77,9 @@ export class ListAllOrdersDto {
   @IsDate()
   endDate: Date;
 
-
   //order secction
   @IsOptional()
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value : [value]
-  ) // Asegurarse de que siempre sea un array
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value])) // Asegurarse de que siempre sea un array
   @IsArray()
   @IsString({ each: true })
   @Validate(IsValidOrderByConstraint)

@@ -10,49 +10,53 @@ import { InternalServerError } from 'src/common/errors/internal-server-error';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
     try {
       const category = await this.prisma.category.create({
-        data: createCategoryDto
-      })
+        data: createCategoryDto,
+      });
       return category;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
-        console.log(error.meta)
-        throw new AlreadyIncludedError(`Error! category with name: ${createCategoryDto.name} already exists!`)
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        console.log(error.meta);
+        throw new AlreadyIncludedError(
+          `Error! category with name: ${createCategoryDto.name} already exists!`,
+        );
       }
-      throw new InternalServerError("Error! try again later")
+      throw new InternalServerError('Error! try again later');
     }
   }
 
   async findAll() {
-    const categories = await this.prisma.category.findMany()
+    const categories = await this.prisma.category.findMany();
     return categories;
   }
 
   async findOne(id: number) {
     const category = await this.prisma.category.findUnique({
       where: {
-        id
-      }
-    })
+        id,
+      },
+    });
 
-    if (!category) throw new NotFoundError('Category not found')
-    return category
-
+    if (!category) throw new NotFoundError('Category not found');
+    return category;
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     try {
       const category = await this.prisma.category.update({
         where: { id },
-        data: updateCategoryDto
-      })
-      return category
+        data: updateCategoryDto,
+      });
+      return category;
     } catch (error) {
-      throw new NotFoundError('Category not found')
+      throw new NotFoundError('Category not found');
     }
   }
 
@@ -60,10 +64,10 @@ export class CategoriesService {
     try {
       const category = await this.prisma.category.delete({
         where: { id },
-      })
-      return category
+      });
+      return category;
     } catch (error) {
-      throw new NotFoundError('Category not found')
+      throw new NotFoundError('Category not found');
     }
   }
 }

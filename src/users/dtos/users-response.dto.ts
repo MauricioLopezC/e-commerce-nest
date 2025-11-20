@@ -1,5 +1,5 @@
-import { User } from "@prisma/client";
-import { Role } from "src/auth/enums/role.enum";
+import { User } from '@prisma/client';
+import { Role } from 'src/auth/enums/role.enum';
 
 export class UserResponseDto {
   id: number;
@@ -18,7 +18,6 @@ export class UserResponseDto {
 
 class Metadata {
   _count: number;
-
 }
 
 export class UsersListResponseDto {

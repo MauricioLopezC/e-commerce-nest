@@ -7,52 +7,51 @@ import { Response } from 'express';
 export class PrismaClientExceptionFilter extends BaseExceptionFilter {
   //TODO: enable this filter globaly
   catch(exception: PrismaClientKnownRequestError, host: ArgumentsHost) {
-    console.log("*******************")
-    const ctx = host.switchToHttp()
-    const response = ctx.getResponse<Response>()
-    const message = exception.message.replace(/\n/g, '')
+    console.log('*******************');
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const message = exception.message.replace(/\n/g, '');
 
-    console.log(exception)
+    console.log(exception);
 
     switch (exception.code) {
       case 'P2002': {
-        const status = HttpStatus.CONFLICT
+        const status = HttpStatus.CONFLICT;
         response.status(status).json({
           statusCode: status,
-          message: `Unique constraint failed`
-        })
+          message: `Unique constraint failed`,
+        });
         break;
       }
       case 'P2001': {
-        const status = HttpStatus.NOT_FOUND
+        const status = HttpStatus.NOT_FOUND;
         response.status(status).json({
           statusCode: status,
-          message
-        })
+          message,
+        });
         break;
       }
       case 'P2025': {
-        const status = HttpStatus.NOT_FOUND
+        const status = HttpStatus.NOT_FOUND;
         response.status(status).json({
           satusCode: status,
-          message: `${exception.meta.modelName ?? ''} not found, ${exception.meta?.cause}`
-        })
+          message: `${exception.meta.modelName ?? ''} not found, ${exception.meta?.cause}`,
+        });
         break;
       }
       case 'P2003': {
-        const status = HttpStatus.CONFLICT
+        const status = HttpStatus.CONFLICT;
         response.status(status).json({
           statusCode: status,
-          message: "Foreing key constraint failed"
-        })
+          message: 'Foreing key constraint failed',
+        });
       }
       default: {
         // default 500 error code
-        console.log("****** DEFAULT *****")
-        super.catch(exception, host)
+        console.log('****** DEFAULT *****');
+        super.catch(exception, host);
         break;
       }
     }
-
   }
 }

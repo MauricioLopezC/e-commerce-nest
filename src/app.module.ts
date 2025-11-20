@@ -22,10 +22,10 @@ import { ConfigModule } from '@nestjs/config';
     StatisticsModule,
     EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
-      isGlobal: true
-    })
+      isGlobal: true,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

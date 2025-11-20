@@ -1,75 +1,86 @@
-import { Transform } from "class-transformer"
-import { IsArray, IsBoolean, IsDate, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min } from "class-validator"
+import { Transform } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 enum DiscountType {
   PERCENTAGE = 'PERCENTAGE',
-  FIXED = 'FIXED'
+  FIXED = 'FIXED',
 }
 
 enum ApplicableTo {
   PRODUCT = 'PRODUCT',
   CATEGORY = 'CATEGORY',
-  GENERAL = 'GENERAL'
+  GENERAL = 'GENERAL',
 }
 
 export class CreateDiscountDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  name: string
+  name: string;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
-  description: string
+  description: string;
 
   @IsString()
   @IsNotEmpty()
   @IsEnum(DiscountType)
-  discountType: DiscountType
+  discountType: DiscountType;
 
   @IsNumber()
   @IsPositive()
-  value: number
+  value: number;
 
-  @Transform(({ value }) => (new Date(value)))
+  @Transform(({ value }) => new Date(value))
   @IsDate()
-  startDate: Date
+  startDate: Date;
 
-  @Transform(({ value }) => (new Date(value)))
+  @Transform(({ value }) => new Date(value))
   @IsDate()
-  endDate: Date
+  endDate: Date;
 
   @IsString()
   @IsEnum(ApplicableTo)
-  applicableTo: ApplicableTo
+  applicableTo: ApplicableTo;
 
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  orderThreshold: number = 0
+  orderThreshold: number = 0;
 
   @IsOptional()
   @IsInt()
   @IsPositive()
-  maxUses: number
+  maxUses: number;
 
   @IsOptional()
   @IsBoolean()
-  isActive: boolean = true
-
-
-  @IsOptional()
-  @IsArray()
-  @IsInt({ each: true })
-  @IsPositive({ each: true })
-  products: number[]
+  isActive: boolean = true;
 
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
   @IsPositive({ each: true })
-  categories: number[]
+  products: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @IsPositive({ each: true })
+  categories: number[];
 }
-

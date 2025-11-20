@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseFilters, NotFoundException, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  ParseIntPipe,
+  UseFilters,
+  NotFoundException,
+  Put,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -15,7 +28,7 @@ import { NotFoundError } from 'src/common/errors/not-found-error';
 export class ProductsController {
   //NOTE: PrismaClientExceptionFilter catch all PrismaClientKnownRequestError
   //exceptions
-  constructor(private readonly productsService: ProductsService) { }
+  constructor(private readonly productsService: ProductsService) {}
 
   @Roles(Role.Admin)
   @Post()
@@ -32,19 +45,22 @@ export class ProductsController {
   @PublicRoute()
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    const productFound = await this.productsService.findOne(id)
-    if (!productFound) throw new NotFoundException('Product not found')
-    return productFound
+    const productFound = await this.productsService.findOne(id);
+    if (!productFound) throw new NotFoundException('Product not found');
+    return productFound;
   }
 
   @Roles(Role.Admin)
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateProductDto: UpdateProductDto
+    @Body() updateProductDto: UpdateProductDto,
   ) {
-    const updatedProduct = await this.productsService.update(id, updateProductDto)
-    return updatedProduct
+    const updatedProduct = await this.productsService.update(
+      id,
+      updateProductDto,
+    );
+    return updatedProduct;
   }
 
   @Roles(Role.Admin)
@@ -55,36 +71,54 @@ export class ProductsController {
 
   @Roles(Role.Admin)
   @Post(':id/categories')
-  async connectCategories(@Param('id', ParseIntPipe) id: number, @Body() connectCategoriesDto: ConnectCategoriesDto) {
+  async connectCategories(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() connectCategoriesDto: ConnectCategoriesDto,
+  ) {
     try {
-      return await this.productsService.connectCategories(id, connectCategoriesDto)
+      return await this.productsService.connectCategories(
+        id,
+        connectCategoriesDto,
+      );
     } catch (error) {
       if (error instanceof NotFoundError) {
-        throw new NotFoundException(error.message)
+        throw new NotFoundException(error.message);
       }
     }
   }
 
   @Roles(Role.Admin)
   @Delete(':id/categories')
-  async disconnectCategories(@Param('id', ParseIntPipe) id: number, @Body() connectCategoriesDto: ConnectCategoriesDto) {
+  async disconnectCategories(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() connectCategoriesDto: ConnectCategoriesDto,
+  ) {
     try {
-      return await this.productsService.disconnectCategories(id, connectCategoriesDto)
+      return await this.productsService.disconnectCategories(
+        id,
+        connectCategoriesDto,
+      );
     } catch (error) {
       if (error instanceof NotFoundError) {
-        throw new NotFoundException(error.message)
+        throw new NotFoundException(error.message);
       }
     }
   }
 
   @Roles(Role.Admin)
   @Put(':id/categories')
-  async replaceCategories(@Param('id', ParseIntPipe) id: number, @Body() connectCategoriesDto: ConnectCategoriesDto) {
+  async replaceCategories(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() connectCategoriesDto: ConnectCategoriesDto,
+  ) {
     try {
-      return await this.productsService.replaceCategories(id, connectCategoriesDto)
+      return await this.productsService.replaceCategories(
+        id,
+        connectCategoriesDto,
+      );
     } catch (error) {
       if (error instanceof NotFoundError) {
-        throw new NotFoundException(error.message)
+        throw new NotFoundException(error.message);
       }
     }
   }

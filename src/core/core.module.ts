@@ -8,6 +8,14 @@ import { PromotionsModule } from './promotions/promotions.module';
 import { MailsModule } from './mails/mails.module';
 
 @Module({
-  imports: [CartModule, FavoritesModule, PurchasesModule, CartItemsModule, OrdersModule, PromotionsModule, MailsModule]
+  imports: [
+    CartModule,
+    FavoritesModule,
+    PurchasesModule,
+    CartItemsModule,
+    OrdersModule,
+    PromotionsModule,
+    MailsModule,
+  ],
 })
-export class CoreModule { }
+export class CoreModule {}
