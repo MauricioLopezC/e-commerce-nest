@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ListAllProductDto } from './dto/list-all-products.dto';
 import { Prisma, Product } from '@prisma/client';
 import { ConnectCategoriesDto } from './dto/connect-categories.dto';
+import { parseOrderBy } from '../../common/orderByParser';
 
 @Injectable()
 export class ProductsService {
@@ -13,7 +14,6 @@ export class ProductsService {
 
   constructor(private prisma: PrismaService) {}
 
-  //TODO: dont use dto in service use a product entity instead
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const categoriesIds = createProductDto.categories.map((categoryId) => ({
       id: categoryId,
@@ -37,23 +37,31 @@ export class ProductsService {
     const page = query.page;
     const offset = (page - 1) * limit; //for pagination offset
 
-    const orderBy = query.orderBy?.map((param) => {
-      const sortOrder = param.charAt(0) === '-' ? 'desc' : 'asc';
-      const formatedParam = param.charAt(0) === '-' ? param.slice(1) : param;
-      return {
-        [formatedParam]: sortOrder,
-      };
-    });
+    const orderBy = parseOrderBy(query.orderBy);
 
-    delete query.limit;
-    delete query.page;
-    delete query.orderBy;
+    const filters: Prisma.ProductWhereInput = {};
+    if (query.category) {
+      filters.categories = {
+        some: {
+          name: query.category,
+        },
+      };
+    }
+    if (query.name) {
+      filters.name = {
+        contains: query.name,
+        mode: 'insensitive',
+      };
+    }
+    if (query.sex) {
+      filters.sex = query.sex;
+    }
 
     const products = await this.prisma.product.findMany({
       orderBy,
       skip: offset,
       take: limit,
-      where: query,
+      where: filters,
       include: {
         images: true,
         categories: true,
@@ -61,7 +69,7 @@ export class ProductsService {
     });
 
     const aggregate = await this.prisma.product.aggregate({
-      where: query,
+      where: filters,
       _count: true,
     });
 

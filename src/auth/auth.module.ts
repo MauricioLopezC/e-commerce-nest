@@ -8,7 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './guards/auth.guard';
 import { RolesGuard } from './guards/roles.guard';
-import { CartModule } from 'src/core/cart/cart.module';
+import { CartModule } from 'src/cart/cart.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({

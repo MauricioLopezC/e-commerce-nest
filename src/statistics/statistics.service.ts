@@ -10,6 +10,7 @@ import {
 } from './types';
 import { GetSalesByCategoryDto } from './dto/get-sales-by-category.dto';
 import { GetSalesByProductDto } from './dto/get-sales-by-product.dto';
+import { GetSalesByUserDto } from './dto/get-sales-by-user.dto';
 
 @Injectable()
 export class StatisticsService {
@@ -49,7 +50,7 @@ export class StatisticsService {
     const result: FilledSalesByMonth[] = [];
 
     // Arrancar desde el primer mes del startDate
-    let currentDate = new Date(
+    const currentDate = new Date(
       startDate.getFullYear(),
       startDate.getMonth(),
       1,
@@ -71,8 +72,7 @@ export class StatisticsService {
     return result;
   }
 
-  //TODO: add startDate and endDate filters
-  async salesByUser() {
+  async salesByUser(query: GetSalesByUserDto) {
     const totalSalesByUser = await this.prisma.order.groupBy({
       by: 'userId',
       orderBy: {
@@ -82,6 +82,10 @@ export class StatisticsService {
       },
       where: {
         status: OrderStatus.COMPLETED,
+        createdAt: {
+          gte: query.startDate,
+          lte: query.endDate,
+        },
       },
       _sum: {
         finalTotal: true,

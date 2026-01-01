@@ -8,7 +8,7 @@ import { UploadImageError } from 'src/common/errors/upload-image-error';
 @Injectable()
 export class ImagesService {
   constructor(
-    private clodinaryService: CloudinaryService,
+    private cloudinaryService: CloudinaryService,
     private prisma: PrismaService,
   ) {}
 
@@ -19,8 +19,8 @@ export class ImagesService {
   ) {
     //Check foreign key constraint before upload to cloudinary
     //this check is normally not necessary because image.create will fail if productSku and productSkuId
-    //do not exists for foreign key constraint. we need no check before upload image to cloudinary
-    //in order to optimize cloudinary api calls
+    //do not exist for foreign key constraint. we need no check before upload image to cloudinary
+    // to optimize cloudinary api calls
     const productSku = await this.prisma.productSku.findUnique({
       where: {
         id: productSkuId,
@@ -33,13 +33,13 @@ export class ImagesService {
         `not found product for product sku ${productSkuId}`,
       );
 
-    const response = await this.clodinaryService.uploadFile(file);
+    const response = await this.cloudinaryService.uploadFile(file);
     //check error
     if (!response.public_id) {
       throw new UploadImageError('Error uploading image, try again later');
     }
 
-    //if ok insert image record in database
+    //if ok insert image record in a database
     const imgSrc = response.public_id;
     await this.prisma.image.create({
       data: {
@@ -67,7 +67,7 @@ export class ImagesService {
       },
     });
 
-    return await this.clodinaryService.destroyImage(public_id);
+    return await this.cloudinaryService.destroyImage(public_id);
   }
 
   async createAndUploadV2(
@@ -84,7 +84,7 @@ export class ImagesService {
     });
 
     const response: CloudinaryResponse =
-      await this.clodinaryService.uploadFile(file);
+      await this.cloudinaryService.uploadFile(file);
     if (!response.secure_url) {
       //error! then delete temp database register
 

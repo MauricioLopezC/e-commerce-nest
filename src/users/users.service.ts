@@ -49,7 +49,7 @@ export class UsersService {
       skip: offset,
     });
 
-    //OPTIMIZE: consider move this logic, totalSpent by user and totalOrdersBy uset to another place
+    //OPTIMIZE: consider moving this logic, totalSpent by user and totalOrdersBy uset to another place
     //in some cases we only need basic users data and this could cause bad performance
     const usersIds: number[] = users.map((user) => user.id);
     const ordersByUser = await this.prisma.order.groupBy({
@@ -87,7 +87,7 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    return await this.prisma.user.findUnique({
+    return this.prisma.user.findUnique({
       where: {
         id: id,
       },
@@ -105,7 +105,7 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    return await this.prisma.user.findUnique({
+    return this.prisma.user.findUnique({
       where: {
         email: email,
       },
@@ -113,7 +113,7 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    return await this.prisma.user.update({
+    return this.prisma.user.update({
       where: {
         id: id,
       },

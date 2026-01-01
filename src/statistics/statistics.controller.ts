@@ -5,6 +5,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { GetSalesByCategoryDto } from './dto/get-sales-by-category.dto';
 import { GetSalesByProductDto } from './dto/get-sales-by-product.dto';
+import { GetSalesByUserDto } from './dto/get-sales-by-user.dto';
 
 @Controller('statistics')
 export class StatisticsController {
@@ -18,8 +19,8 @@ export class StatisticsController {
 
   @Roles(Role.Admin)
   @Get('sales/by-user')
-  async salesByUser() {
-    return await this.statisticsService.salesByUser();
+  async salesByUser(@Query() query: GetSalesByUserDto) {
+    return await this.statisticsService.salesByUser(query);
   }
 
   @Roles(Role.Admin)
