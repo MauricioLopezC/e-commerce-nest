@@ -251,8 +251,6 @@ export class DiscountsService {
     total: Prisma.Decimal,
     isApplying: boolean,
   ) {
-    const appliedDiscounts: AppliedDiscount[] = [];
-    let discountAmount = new Prisma.Decimal(0);
     const now = new Date();
     const discounts = await this.prisma.discount.findMany({
       where: {
@@ -264,15 +262,57 @@ export class DiscountsService {
         categories: true,
       },
     });
-    //console.log(discounts)
 
     if (discounts.length === 0) {
       return {
-        appliedDiscounts,
-        discountAmount,
-        finalTotal: new Prisma.Decimal(total).minus(discountAmount),
+        appliedDiscounts: [],
+        discountAmount: new Prisma.Decimal(0),
+        finalTotal: total,
       };
     }
+
+    const cartItems = await this.prisma.cartItem.findMany({
+      where: {
+        cartId,
+      },
+      include: {
+        product: {
+          include: {
+            categories: true,
+          },
+        },
+      },
+    });
+
+    const { appliedDiscounts, discountAmount, discountsToIncrement } =
+      this._calculateDiscounts(discounts, cartItems, total);
+
+    if (isApplying) {
+      for (const discountId of discountsToIncrement) {
+        await this.incrementUsage(discountId);
+      }
+    }
+
+    return {
+      appliedDiscounts,
+      discountAmount,
+      finalTotal: total.minus(discountAmount),
+    };
+  }
+
+  private _calculateDiscounts(
+    discounts: DiscountWithProductsAndCategories[],
+    cartItems: CartItemsWithProductAndCategories[],
+    total: Prisma.Decimal,
+  ): {
+    appliedDiscounts: AppliedDiscount[];
+    discountAmount: Prisma.Decimal;
+    discountsToIncrement: number[];
+  } {
+    const appliedDiscounts: AppliedDiscount[] = [];
+    let discountAmount = new Prisma.Decimal(0);
+    const discountsToIncrement: number[] = [];
+
     //applying general discounts first because they apply only once per order
     const generalDiscounts = discounts.filter(
       (d) => d.applicableTo === 'GENERAL',
@@ -287,33 +327,17 @@ export class DiscountsService {
       let oneDiscountAmount: Prisma.Decimal;
 
       if (discount.discountType === 'PERCENTAGE') {
-        oneDiscountAmount = total.divToInt(100).times(discount.value);
+        oneDiscountAmount = total.div(100).times(discount.value);
         discountAmount = discountAmount.plus(oneDiscountAmount);
       } else {
         oneDiscountAmount = new Prisma.Decimal(discount.value);
         discountAmount = discountAmount.plus(oneDiscountAmount);
       }
-      if (isApplying) {
-        await this.incrementUsage(discount.id);
-      }
+      discountsToIncrement.push(discount.id);
       this.registerDiscount(appliedDiscounts, discount.id, oneDiscountAmount);
     }
 
     //We apply the other applicable discounts if there are any
-    const cartItems = await this.prisma.cartItem.findMany({
-      where: {
-        cartId,
-      },
-      include: {
-        product: {
-          include: {
-            categories: true,
-          },
-        },
-      },
-    });
-    //HACK: check if discount is being applied with cartItem quantity,
-    //because if I order 2 units of product with discount, discount must be applied to each of the 2 products
     for (const cartItem of cartItems) {
       const applicableDiscounts = discounts.filter((d) =>
         this.isDiscountApplicable(cartItem, d),
@@ -332,7 +356,7 @@ export class DiscountsService {
         if (discount.discountType === 'PERCENTAGE') {
           const price = new Prisma.Decimal(cartItem.product.price);
           const discountValue = new Prisma.Decimal(discount.value);
-          oneDiscountAmount = price.divToInt(100).times(discountValue);
+          oneDiscountAmount = price.div(100).times(discountValue);
           discountAmount = discountAmount.plus(
             oneDiscountAmount.times(cartItem.quantity),
           ); //verificar
@@ -342,9 +366,7 @@ export class DiscountsService {
             oneDiscountAmount.times(cartItem.quantity),
           );
         }
-        if (isApplying) {
-          await this.incrementUsage(discount.id);
-        }
+        discountsToIncrement.push(discount.id);
         this.registerDiscount(appliedDiscounts, discount.id, oneDiscountAmount);
       }
     }
@@ -353,7 +375,7 @@ export class DiscountsService {
     return {
       appliedDiscounts,
       discountAmount,
-      finalTotal: total.minus(discountAmount),
+      discountsToIncrement,
     };
   }
 
