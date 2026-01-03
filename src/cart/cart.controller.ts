@@ -1,12 +1,10 @@
-import { Controller, Get, UseGuards, NotFoundException } from '@nestjs/common';
+import { Controller, Get, NotFoundException } from '@nestjs/common';
 import { CartService } from './cart.service';
-import { OwnGuard } from '../guards/own.guard';
 import { InternalServerError } from 'src/common/errors/internal-server-error';
 import { NotFoundError } from '../common/errors/not-found-error';
 import { CurrentUser } from '../common/current-user/current-user.decorator';
 import { JwtPayload } from '../common/types/JwtPayload';
 
-@UseGuards(OwnGuard)
 @Controller('me/cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
