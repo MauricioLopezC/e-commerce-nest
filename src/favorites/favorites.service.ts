@@ -96,20 +96,20 @@ export class FavoritesService {
 
   async removeByUserId(userId: number, id: number) {
     try {
-      const deleted = await this.prisma.favorite.delete({
+      return await this.prisma.favorite.delete({
         where: {
           id,
           userId,
         },
       });
-      return deleted;
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2001'
+        error.code === 'P2025'
       ) {
         throw new NotFoundError('Favorite not found');
       }
+      console.error(error);
       throw error;
     }
   }
