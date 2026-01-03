@@ -15,19 +15,21 @@ import { NotFoundError } from 'src/common/errors/not-found-error';
 import { OwnGuard } from '../guards/own.guard';
 import { InternalServerError } from 'src/common/errors/internal-server-error';
 import { ValidationError } from 'src/common/errors/validation-error';
+import { CurrentUser } from '../common/current-user/current-user.decorator';
+import { JwtPayload } from '../common/types/JwtPayload';
 
 @UseGuards(OwnGuard)
-@Controller('users/:userId/orders')
+@Controller('me/orders')
 export class MeOrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
   async create(
-    @Param('userId', ParseIntPipe) userId: number,
+    @CurrentUser() user: JwtPayload,
     @Body() createOrderDto: CreateOrderDto,
   ) {
     try {
-      return await this.ordersService.create(userId, createOrderDto);
+      return await this.ordersService.create(user.id, createOrderDto);
     } catch (error) {
       if (error instanceof NotFoundError)
         throw new NotFoundException(error.message);
@@ -38,17 +40,17 @@ export class MeOrdersController {
   }
 
   @Get()
-  async findAll(@Param('userId', ParseIntPipe) userId: number) {
-    return await this.ordersService.findAllByUserId(userId);
+  async findAll(@CurrentUser() user: JwtPayload) {
+    return await this.ordersService.findAllByUserId(user.id);
   }
 
   @Get(':id')
   async findOne(
     @Param('id', ParseIntPipe) id: number,
-    @Param('userId', ParseIntPipe) userId: number,
+    @CurrentUser() user: JwtPayload,
   ) {
     try {
-      return await this.ordersService.findOneByUserId(id, userId);
+      return await this.ordersService.findOneByUserId(id, user.id);
     } catch (error) {
       if (error instanceof NotFoundError)
         throw new NotFoundException(error.message);
