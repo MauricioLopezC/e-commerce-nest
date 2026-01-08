@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   ParseIntPipe,
-  UseGuards,
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
@@ -15,7 +14,6 @@ import {
 import { CartItemsService } from './cart-items.service';
 import { CreateCartItemDto } from './dto/create-cart-item.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
-import { OwnCartGuard } from './own-cart/own-cart.guard';
 import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { StockError } from './errors/stock-error';
@@ -23,7 +21,6 @@ import { ValidationError } from '../common/errors/validation-error';
 import { CurrentUser } from '../common/current-user/current-user.decorator';
 import { JwtPayload } from '../common/types/JwtPayload';
 
-@UseGuards(OwnCartGuard)
 @Controller('me/cart-items')
 export class CartItemsController {
   constructor(private readonly cartItemsService: CartItemsService) {}

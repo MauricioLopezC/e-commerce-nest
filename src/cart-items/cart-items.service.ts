@@ -47,7 +47,9 @@ export class CartItemsService {
         error instanceof PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        throw new AlreadyIncludedError('The product is already included');
+        throw new AlreadyIncludedError(
+          'The product is already included or not found',
+        );
       }
       throw error;
     }
@@ -150,9 +152,11 @@ export class CartItemsService {
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2001'
+        error.code === 'P2025'
       )
         throw new NotFoundError('Cart item not found');
+
+      console.error(error);
       throw error;
     }
   }
