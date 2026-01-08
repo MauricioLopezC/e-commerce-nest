@@ -9,7 +9,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { CreateUserDto } from 'src/users/dtos/CreateUserDto';
+import { CreateUserDto } from 'src/users/dtos/create-user-dto';
 import { RegisterService } from './register/register.service';
 import { LoginDto } from './login/dto/LoginDto';
 import { LoginService } from './login/login.service';

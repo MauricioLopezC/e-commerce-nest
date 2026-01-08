@@ -11,9 +11,9 @@ import {
   Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dtos/CreateUserDto';
+import { CreateUserDto } from './dtos/create-user-dto';
 import { User } from '@prisma/client';
-import { UpdateUserDto } from './dtos/UpdateUserDto';
+import { UpdateUserDto } from './dtos/update-user-dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { ListAllUsersDto } from './dtos/list-all-users.dto';

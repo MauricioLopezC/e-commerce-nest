@@ -1,6 +1,3 @@
-import { User } from '@prisma/client';
-import { Role } from 'src/auth/enums/role.enum';
-
 export class UserResponseDto {
   id: number;
   firstName: string;
