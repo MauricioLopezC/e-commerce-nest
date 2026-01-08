@@ -6,19 +6,16 @@ import {
   Param,
   ParseIntPipe,
   NotFoundException,
-  UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { NotFoundError } from 'src/common/errors/not-found-error';
-import { OwnGuard } from '../guards/own.guard';
 import { InternalServerError } from 'src/common/errors/internal-server-error';
 import { ValidationError } from 'src/common/errors/validation-error';
 import { CurrentUser } from '../common/current-user/current-user.decorator';
 import { JwtPayload } from '../common/types/JwtPayload';
 
-@UseGuards(OwnGuard)
 @Controller('me/orders')
 export class MeOrdersController {
   constructor(private readonly ordersService: OrdersService) {}

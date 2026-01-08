@@ -221,13 +221,22 @@ export class OrdersService {
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto) {
-    const order = await this.prisma.order.update({
-      where: {
-        id,
-      },
-      data: updateOrderDto,
-    });
-    return order;
+    try {
+      return await this.prisma.order.update({
+        where: {
+          id,
+        },
+        data: updateOrderDto,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundError(`Order with id:${id} not found`);
+      }
+      throw error;
+    }
   }
 
   async delete(id: number) {

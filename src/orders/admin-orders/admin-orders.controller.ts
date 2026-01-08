@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -40,11 +41,13 @@ export class AdminOrdersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateOrderDto: UpdateOrderDto,
   ) {
-    return await this.ordersService.update(id, updateOrderDto);
+    try {
+      return await this.ordersService.update(id, updateOrderDto);
+    } catch (error) {
+      if (error instanceof NotFoundError)
+        throw new NotFoundException(error.message);
+      console.error(error);
+      throw new InternalServerErrorException('Error! try again later');
+    }
   }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.ordersService.remove(+id);
-  // }
 }
