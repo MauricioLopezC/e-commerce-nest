@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { CloudinaryResponse } from '../cloudinary/cloudinary-response';
 import { UploadImageError } from 'src/common/errors/upload-image-error';
+import { ValidationError } from 'src/common/errors/validation-error';
 
 @Injectable()
 export class ImagesService {
@@ -16,7 +17,7 @@ export class ImagesService {
     file: Express.Multer.File,
     productId: number,
     productSkuId: number,
-  ) {
+  ): Promise<CloudinaryResponse> {
     //Check foreign key constraint before upload to cloudinary
     //this check is normally not necessary because image.create will fail if productSku and productSkuId
     //do not exist for foreign key constraint. we need no check before upload image to cloudinary
@@ -33,9 +34,10 @@ export class ImagesService {
         `not found product for product sku ${productSkuId}`,
       );
 
-    const response = await this.cloudinaryService.uploadFile(file);
-    //check error
-    if (!response.public_id) {
+    let response: CloudinaryResponse;
+    try {
+      response = await this.cloudinaryService.uploadFile(file);
+    } catch (e) {
       throw new UploadImageError('Error uploading image, try again later');
     }
 
@@ -50,6 +52,62 @@ export class ImagesService {
     });
 
     return response;
+  }
+
+  async batchCreateAndUpload(
+    files: Express.Multer.File[],
+    metadata: { productId: number; productSkuId: number }[],
+  ): Promise<CloudinaryResponse[]> {
+    if (files.length !== metadata.length) {
+      throw new ValidationError('Files and metadata length mismatch');
+    }
+    const productSkuIds = metadata.map((m) => m.productSkuId);
+    const productSkus = await this.prisma.productSku.findMany({
+      where: {
+        id: { in: productSkuIds },
+      },
+      select: { id: true, productId: true },
+    });
+
+    const productSkuMap = new Map(productSkus.map((sku) => [sku.id, sku]));
+
+    for (const meta of metadata) {
+      const productSku = productSkuMap.get(meta.productSkuId);
+      if (!productSku) {
+        throw new NotFoundError(
+          `Product SKU with id ${meta.productSkuId} not found.`,
+        );
+      }
+      if (productSku.productId !== meta.productId) {
+        throw new NotFoundError(
+          `Product SKU with id ${meta.productSkuId} does not belong to product with id ${meta.productId}.`,
+        );
+      }
+    }
+
+    try {
+      const uploadResults =
+        await this.cloudinaryService.uploadMultipleFiles(files);
+
+      const imagesToCreate = uploadResults.map((result, index) => {
+        return {
+          imgSrc: result.public_id,
+          productId: metadata[index].productId,
+          productSkuId: metadata[index].productSkuId,
+        };
+      });
+
+      await this.prisma.image.createMany({
+        data: imagesToCreate,
+      });
+
+      return uploadResults;
+    } catch (e) {
+      if (e instanceof UploadImageError) {
+        throw e;
+      }
+      throw new UploadImageError('Failed to upload one or more images.');
+    }
   }
 
   async deleteAndDestroy(id: number): Promise<CloudinaryResponse> {
@@ -68,45 +126,5 @@ export class ImagesService {
     });
 
     return await this.cloudinaryService.destroyImage(public_id);
-  }
-
-  async createAndUploadV2(
-    file: Express.Multer.File,
-    productId: number,
-    productSkuId: number,
-  ) {
-    const image = await this.prisma.image.create({
-      data: {
-        imgSrc: 'temp',
-        productId,
-        productSkuId,
-      },
-    });
-
-    const response: CloudinaryResponse =
-      await this.cloudinaryService.uploadFile(file);
-    if (!response.secure_url) {
-      //error! then delete temp database register
-
-      await this.prisma.image.delete({
-        where: {
-          id: image.id,
-        },
-      });
-      throw new Error('upload image error');
-    }
-
-    const id = image.id;
-
-    const imgSrc = response.public_id;
-    await this.prisma.image.update({
-      where: {
-        id,
-      },
-      data: {
-        imgSrc,
-      },
-    });
-    return response;
   }
 }

@@ -21,14 +21,15 @@ export class CloudinaryService {
     });
   }
 
-  async uploadMultipleFiles(files: Express.Multer.File[]): Promise<string[]> {
-    const urls = await Promise.all(
-      files.map(async (file): Promise<string> => {
-        const { secure_url } = await this.uploadFile(file);
-        return secure_url;
+  async uploadMultipleFiles(
+    files: Express.Multer.File[],
+  ): Promise<CloudinaryResponse[]> {
+    const responses = await Promise.all(
+      files.map((file) => {
+        return this.uploadFile(file);
       }),
     );
-    return urls;
+    return responses;
   }
 
   async destroyImage(publicId: string): Promise<CloudinaryResponse> {
