@@ -36,7 +36,7 @@ export class ImagesService {
 
     let response: CloudinaryResponse;
     try {
-      response = await this.cloudinaryService.uploadFile(file);
+      response = await this.cloudinaryService.uploadFile(file, 'e-commerce');
     } catch (e) {
       throw new UploadImageError('Error uploading image, try again later');
     }
@@ -86,8 +86,10 @@ export class ImagesService {
     }
 
     try {
-      const uploadResults =
-        await this.cloudinaryService.uploadMultipleFiles(files);
+      const uploadResults = await this.cloudinaryService.uploadMultipleFiles(
+        files,
+        'e-commerce',
+      );
 
       const imagesToCreate = uploadResults.map((result, index) => {
         return {
