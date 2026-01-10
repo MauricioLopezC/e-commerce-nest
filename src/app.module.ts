@@ -15,6 +15,7 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { MailsModule } from './mails/mails.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { OrdersModule } from './orders/orders.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { OrdersModule } from './orders/orders.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
