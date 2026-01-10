@@ -273,9 +273,9 @@ model DiscountCode {
 
 model DiscountsOnOrders {
   discountId     Int
-  discount       Discount @relation(fields: [discountId], references: [id])
+  discount       Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
   orderId        Int
-  order          Order    @relation(fields: [orderId], references: [id])
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   appliedTimes   Int
   discountAmount Float
   assignedAt     DateTime @default(now())
