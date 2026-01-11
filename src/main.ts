@@ -12,6 +12,7 @@ async function bootstrap() {
     }),
   );
 
+  app.enableShutdownHooks();
   app.use(cookieParser());
   app.enableCors({
     origin: ['http://localhost:8080'], //nextjs frontend
