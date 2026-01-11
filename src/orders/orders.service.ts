@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { DiscountsService } from '../promotions/discounts/discounts.service';
 import { InternalServerError } from 'src/common/errors/internal-server-error';

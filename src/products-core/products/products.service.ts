@@ -3,7 +3,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ListAllProductDto } from './dto/list-all-products.dto';
-import { Prisma, Product } from '@prisma/client';
+import { Prisma, Product } from 'src/generated/prisma/client';
 import { ConnectCategoriesDto } from './dto/connect-categories.dto';
 import { parseOrderBy } from '../../common/orderByParser';
 

@@ -2,7 +2,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { OrderCreatedEvent } from '../events/order-created.envent';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
 export class OrderCreatedListener {

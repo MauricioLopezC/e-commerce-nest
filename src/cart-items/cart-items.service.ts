@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateCartItemDto } from './dto/create-cart-item.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CartItem } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { CartItem, Prisma } from 'src/generated/prisma/client';
 import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
 import { StockError } from './errors/stock-error';
 import { NotFoundError } from 'src/common/errors/not-found-error';
@@ -44,7 +43,7 @@ export class CartItemsService {
       });
     } catch (error) {
       if (
-        error instanceof PrismaClientKnownRequestError &&
+        error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
         throw new AlreadyIncludedError(
@@ -131,7 +130,7 @@ export class CartItemsService {
       });
     } catch (error) {
       if (
-        error instanceof PrismaClientKnownRequestError &&
+        error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2001'
       )
         throw new NotFoundError('Cart item not found');
@@ -151,7 +150,7 @@ export class CartItemsService {
       return removedCartItem;
     } catch (error) {
       if (
-        error instanceof PrismaClientKnownRequestError &&
+        error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2025'
       )
         throw new NotFoundError('Cart item not found');

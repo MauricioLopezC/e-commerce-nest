@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SearchDto } from './dto/search.dto';
-import { fullTextSearch } from '@prisma/client/sql';
+import { fullTextSearch } from '../generated/prisma/sql/fullTextSearch';
 
 @Injectable()
 export class SearchService {

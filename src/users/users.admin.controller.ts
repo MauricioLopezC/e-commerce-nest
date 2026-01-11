@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/create-user-dto';
-import { User } from '@prisma/client';
+import { User } from 'src/generated/prisma/client';
 import { UpdateUserDto } from './dtos/update-user-dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';

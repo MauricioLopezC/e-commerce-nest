@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Favorite, Prisma } from '@prisma/client';
+import { Favorite, Prisma } from 'src/generated/prisma/client';
 import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
 
@@ -86,7 +85,7 @@ export class FavoritesService {
       });
     } catch (error) {
       if (
-        error instanceof PrismaClientKnownRequestError &&
+        error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2001'
       ) {
         throw new NotFoundError('Favorite not found');
@@ -104,7 +103,7 @@ export class FavoritesService {
       });
     } catch (error) {
       if (
-        error instanceof PrismaClientKnownRequestError &&
+        error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2025'
       ) {
         throw new NotFoundError('Favorite not found');

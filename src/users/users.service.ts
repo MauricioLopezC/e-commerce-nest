@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user-dto';
 import { UpdateUserDto } from './dtos/update-user-dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { OrderStatus, User } from '@prisma/client';
+import { OrderStatus, User } from 'src/generated/prisma/client';
 import { ListAllUsersDto } from './dtos/list-all-users.dto';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { UsersListResponseDto } from './dtos/users-response.dto';

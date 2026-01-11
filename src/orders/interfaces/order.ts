@@ -1,7 +1,4 @@
-import { OrderItem } from '@prisma/client';
-import { Shipping } from '@prisma/client';
-import { Payment } from '@prisma/client';
-import { User } from '@prisma/client';
+import { OrderItem, Shipping, Payment, User } from 'src/generated/prisma/client';
 
 interface OrderInterface {
   id: number;

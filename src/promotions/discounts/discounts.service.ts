@@ -6,7 +6,7 @@ import {
   DiscountWithProductsAndCategories,
 } from './types/discount-types';
 import { CreateDiscountDto } from './dto/create-discount.dto';
-import { Discount, Prisma } from '@prisma/client';
+import { Discount, Prisma } from 'src/generated/prisma/client';
 import {
   ApplicableTo,
   DiscountType,

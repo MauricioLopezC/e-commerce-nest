@@ -5,7 +5,7 @@ import {
 } from './dto/create-product-skus.dto';
 import { UpdateProductSkusDto } from './dto/update-product-skus.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma, ProductSku } from '@prisma/client';
+import { Prisma, ProductSku } from 'src/generated/prisma/client';
 
 @Injectable()
 export class ProductSkusService {

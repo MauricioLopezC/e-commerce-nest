@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetTotalSalesByMonthDto } from './dto/get-total-sales.dto';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus } from 'src/generated/prisma/client';
 import {
   FilledSalesByMonth,
   SalesByCategory,

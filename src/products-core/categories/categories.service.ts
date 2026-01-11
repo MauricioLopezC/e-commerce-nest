@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Category } from '@prisma/client';
+import { Category, Prisma } from 'src/generated/prisma/client';
 import { NotFoundError } from 'src/common/errors/not-found-error';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
 import { InternalServerError } from 'src/common/errors/internal-server-error';
 
@@ -20,7 +19,7 @@ export class CategoriesService {
       return category;
     } catch (error) {
       if (
-        error instanceof PrismaClientKnownRequestError &&
+        error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
         console.log(error.meta);

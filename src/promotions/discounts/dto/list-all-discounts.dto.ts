@@ -1,4 +1,4 @@
-import { DiscountType } from '@prisma/client';
+import { DiscountType } from 'src/generated/prisma/client';
 import { Transform } from 'class-transformer';
 import {
   IsArray,
