@@ -15,7 +15,9 @@ import { InternalServerError } from 'src/common/errors/internal-server-error';
 import { ValidationError } from 'src/common/errors/validation-error';
 import { CurrentUser } from '../common/current-user/current-user.decorator';
 import { JwtPayload } from '../common/types/JwtPayload';
+import { Throttle } from '@nestjs/throttler';
 
+@Throttle({ default: { ttl: 60000, limit: 5 } })
 @Controller('me/orders')
 export class MeOrdersController {
   constructor(private readonly ordersService: OrdersService) {}

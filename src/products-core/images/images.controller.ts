@@ -22,7 +22,9 @@ import { CreateImageDto } from './dto/create-image.dto';
 import { PrismaClientExceptionFilter } from 'src/common/filters/prisma-client-exception/prisma-client-exception.filter';
 import { NotFoundError } from '../../common/errors/not-found-error';
 import { CloudinaryResponse } from '../cloudinary/cloudinary-response';
+import { Throttle } from '@nestjs/throttler';
 
+@Throttle({ default: { ttl: 60000, limit: 5 } })
 @UseFilters(PrismaClientExceptionFilter)
 @Controller('images')
 @Roles(Role.Admin)

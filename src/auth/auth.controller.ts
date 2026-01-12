@@ -16,7 +16,9 @@ import { LoginService } from './login/login.service';
 import { PublicRoute } from './decorators/public-routes.decorator';
 import { RolesGuard } from './guards/roles.guard';
 import { Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
 
+@Throttle({ default: { ttl: 60000, limit: 5 } })
 @Controller('auth')
 export class AuthController {
   constructor(
