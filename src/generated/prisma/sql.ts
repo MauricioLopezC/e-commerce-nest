@@ -6,3 +6,9 @@
 export { type $DbEnums } from "./sql/$DbEnums"
 
 export * from "./sql/fullTextSearch"
+
+export * from "./sql/getSalesByCategory"
+
+export * from "./sql/getSalesByProduct"
+
+export * from "./sql/getUsersWithSales"

@@ -9,7 +9,7 @@ import {
   CartItemsWithProductAndCategories,
   DiscountWithProductsAndCategories,
 } from 'src/promotions/discounts/types/discount-types';
-import { DiscountApplication, Prisma, Sex } from '@prisma/client';
+import { DiscountApplication, Prisma, Sex } from 'src/generated/prisma/client';
 
 describe('DiscountsService._calculateDiscounts', () => {
   let service: DiscountsService;

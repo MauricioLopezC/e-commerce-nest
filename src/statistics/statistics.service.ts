@@ -2,15 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetTotalSalesByMonthDto } from './dto/get-total-sales.dto';
 import { OrderStatus } from 'src/generated/prisma/client';
-import {
-  FilledSalesByMonth,
-  SalesByCategory,
-  SalesByProduct,
-  TotalSalesByMonth,
-} from './types';
+import { FilledSalesByMonth, SaleByProduct, TotalSalesByMonth } from './types';
 import { GetSalesByCategoryDto } from './dto/get-sales-by-category.dto';
 import { GetSalesByProductDto } from './dto/get-sales-by-product.dto';
 import { GetSalesByUserDto } from './dto/get-sales-by-user.dto';
+import {
+  getSalesByCategory,
+  getSalesByProduct,
+} from 'src/generated/prisma/sql';
 
 @Injectable()
 export class StatisticsService {
@@ -113,31 +112,19 @@ export class StatisticsService {
   async salesByCategory(query: GetSalesByCategoryDto) {
     const startDate = query.startDate;
     const endDate = query.endDate;
-
-    const result = await this.prisma.$queryRaw<SalesByCategory[]>`
-      select c.id, c.name "categoryName", SUM(oi.price*oi.quantity) total
-      from "OrderItem" oi
-      join "Product" p ON p.id = oi."productId"
-      join "_CategoryToProduct" cp on cp."B" = p.id
-      join "Category" c on cp."A" = c.id
-      where oi."createdAt" between ${startDate} and ${endDate}
-      group by c.id
-      order by total desc;
-    `;
+    const result = await this.prisma.$queryRawTyped(
+      getSalesByCategory(startDate, endDate),
+    );
     return result.map((item) => ({ ...item, total: Number(item.total) }));
   }
 
-  async salesByProduct(query: GetSalesByProductDto) {
+  async salesByProduct(query: GetSalesByProductDto): Promise<SaleByProduct[]> {
     const startDate = query.startDate;
     const endDate = query.endDate;
 
-    const result = await this.prisma.$queryRaw<SalesByProduct[]>`
-      select p.name, sum(oi.price*oi.quantity) total from "OrderItem" oi
-      join "Product" p ON p.id = oi."productId"
-      where oi."createdAt" between ${startDate} and ${endDate}
-      group by p.name
-      order by total desc;
-    `;
+    const result = await this.prisma.$queryRawTyped(
+      getSalesByProduct(startDate, endDate),
+    );
     return result.map((item) => ({ ...item, total: Number(item.total) }));
   }
 }

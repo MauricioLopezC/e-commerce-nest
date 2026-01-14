@@ -20,8 +20,8 @@ async function bootstrap() {
     origin: ['http://localhost:8080'], //nextjs frontend
     credentials: true,
   });
-  //without this configuration for origin and credentials
-  //the browser not allow set cookie
+  //without this configuration for origin and credentials,
+  //the browser doesn't allow set cookie
   await app.listen(3000);
 }
 bootstrap();

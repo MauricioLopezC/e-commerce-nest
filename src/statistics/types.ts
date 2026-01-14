@@ -8,13 +8,13 @@ export interface FilledSalesByMonth {
   total_sales: number;
 }
 
-export interface SalesByCategory {
+export interface SaleByCategory {
   id: number;
   categoryName: string;
   total: number;
 }
 
-export interface SalesByProduct {
+export interface SaleByProduct {
   name: string;
   total: number;
 }
