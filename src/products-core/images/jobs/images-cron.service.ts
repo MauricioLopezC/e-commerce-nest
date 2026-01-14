@@ -10,13 +10,13 @@ export class ImagesCronService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
   /**
    * This cron job runs daily at 3 AM to clean up orphaned images.
    * Adjust the frequency as needed for your production environment.
    */
-  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  @Cron(CronExpression.EVERY_HOUR)
   async handleCron() {
     this.logger.log('Starting orphaned images cleanup job...');
     try {
