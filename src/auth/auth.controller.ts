@@ -17,6 +17,7 @@ import { PublicRoute } from './decorators/public-routes.decorator';
 import { RolesGuard } from './guards/roles.guard';
 import { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
+import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
 
 @Throttle({ default: { ttl: 60000, limit: 5 } })
 @Controller('auth')
@@ -33,8 +34,9 @@ export class AuthController {
       const user = await this.registerService.register(createUserDto);
       return user;
     } catch (error) {
-      console.log(error);
-      throw new HttpException('User already exists', HttpStatus.CONFLICT);
+      if (error instanceof AlreadyIncludedError)
+        throw new HttpException('User already exists', HttpStatus.CONFLICT);
+      throw error;
     }
   }
 

@@ -5,6 +5,7 @@ import {
   IsPositive,
   IsArray,
   Min,
+  IsEnum,
 } from 'class-validator';
 import { Sex } from '../enums/sex.enum';
 export class CreateProductDto {
@@ -27,5 +28,6 @@ export class CreateProductDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsEnum(Sex)
   sex: Sex;
 }
