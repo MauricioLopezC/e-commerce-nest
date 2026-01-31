@@ -1,4 +1,4 @@
-import { IsArray, IsNumber, Min, min } from 'class-validator';
+import { IsArray, IsNumber, Min } from 'class-validator';
 
 export class ConnectCategoriesDto {
   @IsArray()

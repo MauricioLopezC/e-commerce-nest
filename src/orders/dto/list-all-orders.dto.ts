@@ -2,11 +2,9 @@ import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsDate,
-  IsDateString,
   IsEnum,
   IsInt,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   Max,
