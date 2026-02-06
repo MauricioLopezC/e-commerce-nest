@@ -10,6 +10,6 @@ echo "Starting database reset and seed..."
 npx prisma migrate reset --force
 
 # Run Prisma db seed.
-npx prisma db seed
+# TODO: Use database script seed instead
 
 echo "Database reset and seed completed successfully."
