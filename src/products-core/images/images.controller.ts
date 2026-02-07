@@ -49,7 +49,6 @@ export class ImagesController {
     file: Express.Multer.File,
     @Body() body: CreateImageDto,
   ) {
-    console.log(body.productId, body.productSkuId);
     if (!file) throw new BadRequestException('Failed to upload image');
 
     try {

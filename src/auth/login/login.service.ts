@@ -28,7 +28,6 @@ export class LoginService {
       loginDto.password,
       user.password,
     );
-    console.log(matchPassword);
     if (!matchPassword) {
       throw new UnauthorizedException('Wrong password');
     }

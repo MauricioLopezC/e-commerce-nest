@@ -122,13 +122,11 @@ export class UsersService {
   }
 
   async remove(id: number): Promise<User> {
-    console.log('USER ID = ', id);
     const deletedUser = await this.prisma.user.delete({
       where: {
         id,
       },
     });
-    console.log('DELETED ', deletedUser);
     return deletedUser;
   }
 

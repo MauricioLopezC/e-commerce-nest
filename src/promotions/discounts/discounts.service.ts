@@ -21,7 +21,6 @@ export class DiscountsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: ListAllDiscountsDto) {
-    console.log(query);
     const limit = query.limit;
     const page = query.page;
     const offset = (page - 1) * limit; //for pagination offset
@@ -158,7 +157,6 @@ export class DiscountsService {
   }
 
   async update(id: number, body: UpdateDiscountDto): Promise<Discount> {
-    console.log('body', body);
     const discount = await this.prisma.discount.findUnique({
       where: {
         id: id,
@@ -208,8 +206,6 @@ export class DiscountsService {
       }
       categories = body.categories?.map((cid) => ({ id: cid })); //undefined if there is no categoryIds
     }
-
-    console.log(products, categories);
 
     const updatedDiscount = await this.prisma.discount.update({
       where: { id },

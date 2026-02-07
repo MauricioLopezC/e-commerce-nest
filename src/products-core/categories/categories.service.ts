@@ -22,7 +22,6 @@ export class CategoriesService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        console.log(error.meta);
         throw new AlreadyIncludedError(
           `Error! category with name: ${createCategoryDto.name} already exists!`,
         );
