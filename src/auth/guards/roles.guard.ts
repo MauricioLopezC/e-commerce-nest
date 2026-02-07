@@ -1,9 +1,16 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
+  private readonly logger = new Logger(RolesGuard.name);
+
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -12,15 +19,26 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    console.log('ROLEs => ', requiredRoles);
-
     if (!requiredRoles) {
       return true;
     }
 
-    //in the AuthGuard, We assign the payload to the request object
     const { user } = context.switchToHttp().getRequest();
-    console.log('USER==>', user);
-    return requiredRoles.some((role: string) => user.role === role);
+
+    if (user) {
+      this.logger.log(
+        `User ${user.email} (ID: ${user.id}) with Role: ${user.role} is accessing a protected route`,
+      );
+    }
+
+    const hasRole = requiredRoles.some((role: string) => user.role === role);
+
+    if (!hasRole) {
+      this.logger.warn(
+        `Access denied for User ${user?.email}. Required roles: [${requiredRoles}]`,
+      );
+    }
+
+    return hasRole;
   }
 }
