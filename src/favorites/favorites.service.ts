@@ -6,6 +6,9 @@ import { Favorite, Prisma } from 'src/generated/prisma/client';
 import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
+import {
+  operationFailedRecordNotFound,
+} from 'src/common/prisma-erros';
 
 @Injectable()
 export class FavoritesService {
@@ -86,7 +89,7 @@ export class FavoritesService {
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2001'
+        error.code === operationFailedRecordNotFound
       ) {
         throw new NotFoundError('Favorite not found');
       }
@@ -104,7 +107,7 @@ export class FavoritesService {
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
+        error.code === operationFailedRecordNotFound
       ) {
         throw new NotFoundError('Favorite not found');
       }

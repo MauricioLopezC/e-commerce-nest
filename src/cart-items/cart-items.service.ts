@@ -7,6 +7,10 @@ import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
 import { StockError } from './errors/stock-error';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { ValidationError } from '../common/errors/validation-error';
+import {
+  operationFailedRecordNotFound,
+  uniqueConstraint,
+} from 'src/common/prisma-erros';
 
 @Injectable()
 export class CartItemsService {
@@ -44,7 +48,7 @@ export class CartItemsService {
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
+        error.code === uniqueConstraint
       ) {
         throw new AlreadyIncludedError(
           'The product is already included or not found',
@@ -131,7 +135,7 @@ export class CartItemsService {
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2001'
+        error.code === operationFailedRecordNotFound
       )
         throw new NotFoundError('Cart item not found');
       throw error;
@@ -151,7 +155,7 @@ export class CartItemsService {
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
+        error.code === operationFailedRecordNotFound
       )
         throw new NotFoundError('Cart item not found');
 

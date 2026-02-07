@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from 'src/generated/prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
+import { uniqueConstraint } from 'src/common/prisma-erros';
 
 @Injectable()
 export class RegisterService {
@@ -21,7 +22,7 @@ export class RegisterService {
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2002'
+        error.code === uniqueConstraint
       )
         throw new AlreadyIncludedError('User already exists');
       throw error;

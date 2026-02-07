@@ -6,6 +6,7 @@ import { Category, Prisma } from 'src/generated/prisma/client';
 import { NotFoundError } from 'src/common/errors/not-found-error';
 import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
 import { InternalServerError } from 'src/common/errors/internal-server-error';
+import { uniqueConstraint } from 'src/common/prisma-erros';
 
 @Injectable()
 export class CategoriesService {
@@ -20,7 +21,7 @@ export class CategoriesService {
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
+        error.code === uniqueConstraint
       ) {
         throw new AlreadyIncludedError(
           `Error! category with name: ${createCategoryDto.name} already exists!`,

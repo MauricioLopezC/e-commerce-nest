@@ -1,4 +1,5 @@
 export const uniqueConstraint = 'P2002';
+export const recordNotFound = 'P2001';
 export const operationFailedRecordNotFound = 'P2025';
 
 export const valueTooLong = 'P2000';

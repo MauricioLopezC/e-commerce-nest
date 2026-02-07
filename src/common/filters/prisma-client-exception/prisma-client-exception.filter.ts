@@ -2,6 +2,12 @@ import { ArgumentsHost, Catch, HttpStatus } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { Prisma } from 'src/generated/prisma/client';
 import { Response } from 'express';
+import {
+  foreignKeyConstraint,
+  operationFailedRecordNotFound,
+  recordNotFound,
+  uniqueConstraint,
+} from 'src/common/prisma-erros';
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaClientExceptionFilter extends BaseExceptionFilter {
@@ -15,7 +21,7 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
     console.log(exception);
 
     switch (exception.code) {
-      case 'P2002': {
+      case uniqueConstraint: {
         const status = HttpStatus.CONFLICT;
         response.status(status).json({
           statusCode: status,
@@ -23,7 +29,7 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
         });
         break;
       }
-      case 'P2001': {
+      case recordNotFound: {
         const status = HttpStatus.NOT_FOUND;
         response.status(status).json({
           statusCode: status,
@@ -31,7 +37,7 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
         });
         break;
       }
-      case 'P2025': {
+      case operationFailedRecordNotFound: {
         const status = HttpStatus.NOT_FOUND;
         response.status(status).json({
           satusCode: status,
@@ -39,7 +45,7 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
         });
         break;
       }
-      case 'P2003': {
+      case foreignKeyConstraint: {
         const status = HttpStatus.CONFLICT;
         response.status(status).json({
           statusCode: status,

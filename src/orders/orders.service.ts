@@ -11,6 +11,9 @@ import { OrderCreatedEvent } from './events/order-created.envent';
 import { ListAllOrdersDto } from './dto/list-all-orders.dto';
 import { parseOrderBy } from 'src/common/orderByParser';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import {
+  operationFailedRecordNotFound,
+} from 'src/common/prisma-erros';
 
 @Injectable()
 export class OrdersService {
@@ -231,7 +234,7 @@ export class OrdersService {
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
+        error.code === operationFailedRecordNotFound
       ) {
         throw new NotFoundError(`Order with id:${id} not found`);
       }
@@ -248,7 +251,7 @@ export class OrdersService {
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2001'
+        error.code === operationFailedRecordNotFound
       ) {
         throw new NotFoundError(`Order with id:${id} not found`);
       }
