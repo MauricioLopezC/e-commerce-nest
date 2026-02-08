@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { PrismaExceptionFilter } from './common/filters/prisma-client-exception/prisma-client-exception.filter';
+import { BusinessExceptionFilter } from './common/filters/business-exception/business-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,6 +13,11 @@ async function bootstrap() {
       whitelist: true,
       transform: true,
     }),
+  );
+
+  app.useGlobalFilters(
+    new PrismaExceptionFilter(),
+    new BusinessExceptionFilter(),
   );
 
   app.enableShutdownHooks();
