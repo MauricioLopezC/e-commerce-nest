@@ -1,63 +1,32 @@
-import { ArgumentsHost, Catch, HttpStatus } from '@nestjs/common';
-import { BaseExceptionFilter } from '@nestjs/core';
-import { Prisma } from 'src/generated/prisma/client';
-import { Response } from 'express';
+import { Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import {
-  foreignKeyConstraint,
-  operationFailedRecordNotFound,
-  recordNotFound,
-  uniqueConstraint,
-} from 'src/common/prisma-erros';
+  NotFoundError,
+  UniqueConstraintError,
+} from 'src/common/errors/business-error';
+import { Prisma } from 'src/generated/prisma/client';
 
 @Catch(Prisma.PrismaClientKnownRequestError)
-export class PrismaClientExceptionFilter extends BaseExceptionFilter {
-  //TODO: enable this filter globaly
-  catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
-    console.log('*******************');
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const message = exception.message.replace(/\n/g, '');
-
-    console.log(exception);
-
-    switch (exception.code) {
-      case uniqueConstraint: {
-        const status = HttpStatus.CONFLICT;
-        response.status(status).json({
-          statusCode: status,
-          message: `Unique constraint failed`,
-        });
-        break;
-      }
-      case recordNotFound: {
-        const status = HttpStatus.NOT_FOUND;
-        response.status(status).json({
-          statusCode: status,
-          message,
-        });
-        break;
-      }
-      case operationFailedRecordNotFound: {
-        const status = HttpStatus.NOT_FOUND;
-        response.status(status).json({
-          satusCode: status,
-          message: `${exception.meta.modelName ?? ''} not found, ${exception.meta?.cause}`,
-        });
-        break;
-      }
-      case foreignKeyConstraint: {
-        const status = HttpStatus.CONFLICT;
-        response.status(status).json({
-          statusCode: status,
-          message: 'Foreing key constraint failed',
-        });
-      }
-      default: {
-        // default 500 error code
-        console.log('****** DEFAULT *****');
-        super.catch(exception, host);
-        break;
-      }
+export class PrismaExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(PrismaExceptionFilter.name);
+  catch(error: Prisma.PrismaClientKnownRequestError) {
+    if (error.code === 'P2025') {
+      this.logger.warn(
+        `Prisma P2025: ${error.meta?.cause ?? 'Record not found'}`,
+      );
+      throw new NotFoundError('Resource not found');
     }
+
+    if (error.code === 'P2002') {
+      const fields = (error.meta as any)?.target?.join(', ') ?? 'unknown field';
+
+      this.logger.warn(
+        `Prisma P2002 (unique constraint) on field(s): ${fields}`,
+      );
+      throw new UniqueConstraintError('Unique constraint failed');
+    }
+
+    this.logger.error(`Unhandled Prisma error (${error.code})`, error.stack);
+
+    throw error;
   }
 }
