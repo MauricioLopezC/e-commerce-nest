@@ -254,6 +254,9 @@ export class OrdersService {
       },
     });
     const aggregate = await this.prisma.order.aggregate({
+      where: {
+        userId,
+      },
       _sum: {
         total: true,
       },
@@ -262,7 +265,9 @@ export class OrdersService {
 
     return {
       orders,
-      aggregate,
+      metadata: {
+        ...aggregate,
+      },
     };
   }
 
