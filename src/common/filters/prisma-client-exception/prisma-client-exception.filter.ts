@@ -1,4 +1,9 @@
-import { Catch, ExceptionFilter, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Catch,
+  ExceptionFilter,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   NotFoundError,
   UniqueConstraintError,
@@ -9,8 +14,7 @@ import { Prisma } from 'src/generated/prisma/client';
 export class PrismaExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(PrismaExceptionFilter.name);
   catch(error: Prisma.PrismaClientKnownRequestError) {
-    console.log(error.meta);
-    console.log(error.name);
+    console.log(error.code);
     if (error.code === 'P2025') {
       this.logger.warn(
         `Prisma P2025: ${error.meta?.cause ?? 'Record not found'}`,

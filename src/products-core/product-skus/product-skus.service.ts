@@ -114,10 +114,20 @@ export class ProductSkusService {
         ...item,
         productId,
       }));
-    const result = await this.prisma.productSku.createMany({
-      data,
-      skipDuplicates: true,
-    });
-    return result;
+
+    try {
+      return await this.prisma.productSku.createMany({
+        data,
+        skipDuplicates: true,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === prismaForeignKeyConstraintError
+      ) {
+        throw new NotFoundError(`Product with id: ${productId} not found`);
+      }
+      throw error;
+    }
   }
 }
