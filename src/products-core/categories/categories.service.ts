@@ -2,41 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Category, Prisma } from 'src/generated/prisma/client';
-import { NotFoundError } from 'src/common/errors/not-found-error';
-import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
-import { InternalServerError } from 'src/common/errors/internal-server-error';
-import { uniqueConstraint } from 'src/common/prisma-erros';
+import { Category } from 'src/generated/prisma/client';
+import { NotFoundError } from 'src/common/errors/business-error';
 
 @Injectable()
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    try {
-      const category = await this.prisma.category.create({
-        data: createCategoryDto,
-      });
-      return category;
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === uniqueConstraint
-      ) {
-        throw new AlreadyIncludedError(
-          `Error! category with name: ${createCategoryDto.name} already exists!`,
-        );
-      }
-      throw new InternalServerError('Error! try again later');
-    }
+    const category = await this.prisma.category.create({
+      data: createCategoryDto,
+    });
+    return category;
   }
 
-  async findAll() {
+  async findAll(): Promise<Category[]> {
     const categories = await this.prisma.category.findMany();
     return categories;
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<Category> {
     const category = await this.prisma.category.findUnique({
       where: {
         id,
@@ -48,25 +33,17 @@ export class CategoriesService {
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    try {
-      const category = await this.prisma.category.update({
-        where: { id },
-        data: updateCategoryDto,
-      });
-      return category;
-    } catch (error) {
-      throw new NotFoundError('Category not found');
-    }
+    const category = await this.prisma.category.update({
+      where: { id },
+      data: updateCategoryDto,
+    });
+    return category;
   }
 
   async remove(id: number) {
-    try {
-      const category = await this.prisma.category.delete({
-        where: { id },
-      });
-      return category;
-    } catch (error) {
-      throw new NotFoundError('Category not found');
-    }
+    const category = await this.prisma.category.delete({
+      where: { id },
+    });
+    return category;
   }
 }

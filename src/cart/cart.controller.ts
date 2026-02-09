@@ -1,7 +1,5 @@
-import { Controller, Get, NotFoundException } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { CartService } from './cart.service';
-import { InternalServerError } from 'src/common/errors/internal-server-error';
-import { NotFoundError } from '../common/errors/not-found-error';
 import { CurrentUser } from '../common/current-user/current-user.decorator';
 import { JwtPayload } from '../common/types/JwtPayload';
 
@@ -11,21 +9,11 @@ export class CartController {
 
   @Get()
   async findCart(@CurrentUser() user: JwtPayload) {
-    try {
-      return await this.cartService.findOneByUserId(user.id);
-    } catch (error) {
-      if (error instanceof NotFoundError)
-        throw new NotFoundException('Carts Not found');
-      throw new InternalServerError('Error! try again later');
-    }
+    return await this.cartService.findOneByUserId(user.id);
   }
 
   @Get('/total-discount')
   async calculateDiscounts(@CurrentUser() user: JwtPayload) {
-    try {
-      return await this.cartService.checkDiscounts(user.id);
-    } catch (error) {
-      throw new InternalServerError('Error! try again later');
-    }
+    return await this.cartService.checkDiscounts(user.id);
   }
 }

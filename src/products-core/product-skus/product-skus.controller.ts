@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   ParseIntPipe,
-  NotFoundException,
-  UseFilters,
 } from '@nestjs/common';
 import { ProductSkusService } from './product-skus.service';
 import {
@@ -19,9 +17,7 @@ import { UpdateProductSkusDto } from './dto/update-product-skus.dto';
 import { PublicRoute } from 'src/auth/decorators/public-routes.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
-import { PrismaClientExceptionFilter } from 'src/common/filters/prisma-client-exception/prisma-client-exception.filter';
 
-@UseFilters(PrismaClientExceptionFilter)
 @Controller('products/:productId/product-skus')
 export class ProductSkusController {
   //images could be passes in array on crateProductskuDto
@@ -51,12 +47,7 @@ export class ProductSkusController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    const productSkuFound = await this.productSkusService.findOne(
-      productId,
-      id,
-    );
-    if (!productSkuFound) throw new NotFoundException('Product Sku not found');
-    return productSkuFound;
+    return await this.productSkusService.findOne(productId, id);
   }
 
   @Roles(Role.Admin)
@@ -88,10 +79,6 @@ export class ProductSkusController {
     @Param('productId', ParseIntPipe) productId: number,
     @Body() createbatchdto: CreateBatchProductSkusDto,
   ) {
-    const productSkus = await this.productSkusService.batchCreate(
-      productId,
-      createbatchdto,
-    );
-    return productSkus;
+    return await this.productSkusService.batchCreate(productId, createbatchdto);
   }
 }

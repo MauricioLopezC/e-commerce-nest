@@ -4,25 +4,17 @@ import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Favorite, Prisma } from 'src/generated/prisma/client';
 import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
-import { NotFoundError } from 'src/common/errors/not-found-error';
-import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
-import {
-  operationFailedRecordNotFound,
-} from 'src/common/prisma-erros';
+import { NotFoundError } from 'src/common/errors/business-error';
 
 @Injectable()
 export class FavoritesService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: number, createFavoriteDto: CreateFavoriteDto) {
-    try {
-      const createdFavorite = await this.prisma.favorite.create({
-        data: { userId: userId, productId: createFavoriteDto.productId },
-      });
-      return createdFavorite;
-    } catch (error) {
-      throw new AlreadyIncludedError('The product is already included');
-    }
+    const createdFavorite = await this.prisma.favorite.create({
+      data: { userId: userId, productId: createFavoriteDto.productId },
+    });
+    return createdFavorite;
   }
 
   async findAllByUserId(userId: number, query: ListAllFavoritesDto) {
@@ -76,43 +68,23 @@ export class FavoritesService {
     productId: number,
     updateFavoriteDto: UpdateFavoriteDto,
   ) {
-    try {
-      return await this.prisma.favorite.update({
-        where: {
-          productId_userId: {
-            userId,
-            productId,
-          },
+    return await this.prisma.favorite.update({
+      where: {
+        productId_userId: {
+          userId,
+          productId,
         },
-        data: updateFavoriteDto,
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === operationFailedRecordNotFound
-      ) {
-        throw new NotFoundError('Favorite not found');
-      }
-    }
+      },
+      data: updateFavoriteDto,
+    });
   }
 
   async removeByUserId(userId: number, id: number) {
-    try {
-      return await this.prisma.favorite.delete({
-        where: {
-          id,
-          userId,
-        },
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === operationFailedRecordNotFound
-      ) {
-        throw new NotFoundError('Favorite not found');
-      }
-      console.error(error);
-      throw error;
-    }
+    return await this.prisma.favorite.delete({
+      where: {
+        id,
+        userId,
+      },
+    });
   }
 }

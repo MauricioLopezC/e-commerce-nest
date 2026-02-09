@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -6,12 +6,10 @@ import { ListAllProductDto } from './dto/list-all-products.dto';
 import { Prisma, Product } from 'src/generated/prisma/client';
 import { ConnectCategoriesDto } from './dto/connect-categories.dto';
 import { parseOrderBy } from '../../common/orderByParser';
+import { NotFoundError } from 'src/common/errors/business-error';
 
 @Injectable()
 export class ProductsService {
-  //NOTE: all PrismaClientKnownRequestError could be manage by exception filter,
-  //and we can manage business errors here using custom errors
-
   constructor(private prisma: PrismaService) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -89,6 +87,9 @@ export class ProductsService {
         categories: true,
       },
     });
+    if (!product) {
+      throw new NotFoundError('Product not found');
+    }
     return product;
   }
 
@@ -96,22 +97,20 @@ export class ProductsService {
     id: number,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    const updatedProduct = await this.prisma.product.update({
+    return await this.prisma.product.update({
       where: {
         id,
       },
       data: updateProductDto,
     });
-    return updatedProduct;
   }
 
   async remove(id: number): Promise<Product> {
-    const deletedProduct = await this.prisma.product.delete({
+    return await this.prisma.product.delete({
       where: {
         id,
       },
     });
-    return deletedProduct;
   }
 
   async connectCategories(
@@ -121,22 +120,17 @@ export class ProductsService {
     const categoryIds = connectCategoriesDto.categoryIds.map((categoryId) => ({
       id: categoryId,
     }));
-    try {
-      const product = await this.prisma.product.update({
-        where: { id },
-        data: {
-          categories: {
-            connect: categoryIds,
-          },
+    return await this.prisma.product.update({
+      where: { id },
+      data: {
+        categories: {
+          connect: categoryIds,
         },
-        include: {
-          categories: true,
-        },
-      });
-      return product;
-    } catch (error) {
-      throw new NotFoundException('some or all categories not found');
-    }
+      },
+      include: {
+        categories: true,
+      },
+    });
   }
 
   async disconnectCategories(
@@ -146,22 +140,17 @@ export class ProductsService {
     const categoryIds = connectCategoriesDto.categoryIds.map((categoryId) => ({
       id: categoryId,
     }));
-    try {
-      const product = await this.prisma.product.update({
-        where: { id },
-        data: {
-          categories: {
-            disconnect: categoryIds,
-          },
+    return await this.prisma.product.update({
+      where: { id },
+      data: {
+        categories: {
+          disconnect: categoryIds,
         },
-        include: {
-          categories: true,
-        },
-      });
-      return product;
-    } catch (error) {
-      throw new NotFoundException('some or all categories not found');
-    }
+      },
+      include: {
+        categories: true,
+      },
+    });
   }
 
   async replaceCategories(
@@ -171,21 +160,16 @@ export class ProductsService {
     const categoryIds = connectCategoriesDto.categoryIds.map((categoryId) => ({
       id: categoryId,
     }));
-    try {
-      const product = await this.prisma.product.update({
-        where: { id },
-        data: {
-          categories: {
-            set: categoryIds,
-          },
+    return await this.prisma.product.update({
+      where: { id },
+      data: {
+        categories: {
+          set: categoryIds,
         },
-        include: {
-          categories: true,
-        },
-      });
-      return product;
-    } catch (error) {
-      throw new NotFoundException('some or all categories not found');
-    }
+      },
+      include: {
+        categories: true,
+      },
+    });
   }
 }

@@ -14,12 +14,10 @@ import {
 import { CartItemsService } from './cart-items.service';
 import { CreateCartItemDto } from './dto/create-cart-item.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
-import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
-import { NotFoundError } from 'src/common/errors/not-found-error';
 import { StockError } from './errors/stock-error';
-import { ValidationError } from '../common/errors/validation-error';
 import { CurrentUser } from '../common/current-user/current-user.decorator';
 import { JwtPayload } from '../common/types/JwtPayload';
+import { NotFoundError } from 'src/common/errors/business-error';
 
 @Controller('me/cart-items')
 export class CartItemsController {
@@ -30,17 +28,7 @@ export class CartItemsController {
     @CurrentUser() user: JwtPayload,
     @Body() createCartItemDto: CreateCartItemDto,
   ) {
-    try {
-      return await this.cartItemsService.create(user.id, createCartItemDto);
-    } catch (error) {
-      if (error instanceof AlreadyIncludedError)
-        throw new ConflictException(error.message);
-      if (error instanceof ValidationError)
-        throw new ConflictException(error.message);
-      if (error instanceof NotFoundError)
-        throw new NotFoundException(error.message);
-      throw new InternalServerErrorException('Error! try again later');
-    }
+    return await this.cartItemsService.create(user.id, createCartItemDto);
   }
 
   @Get()
@@ -53,13 +41,7 @@ export class CartItemsController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: JwtPayload,
   ) {
-    try {
-      return await this.cartItemsService.findOneByUserId(user.id, id);
-    } catch (error) {
-      if (error instanceof NotFoundError)
-        throw new NotFoundException(error.message);
-      throw new InternalServerErrorException('Error! try again later');
-    }
+    return await this.cartItemsService.findOneByUserId(user.id, id);
   }
 
   @Patch(':id')
@@ -89,12 +71,6 @@ export class CartItemsController {
     @CurrentUser() user: JwtPayload,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    try {
-      return await this.cartItemsService.remove(user.id, id);
-    } catch (error) {
-      if (error instanceof NotFoundError)
-        throw new NotFoundException(error.message);
-      throw new InternalServerErrorException('Error! try again later');
-    }
+    return await this.cartItemsService.remove(user.id, id);
   }
 }

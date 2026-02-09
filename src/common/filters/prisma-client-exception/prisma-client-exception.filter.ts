@@ -9,6 +9,8 @@ import { Prisma } from 'src/generated/prisma/client';
 export class PrismaExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(PrismaExceptionFilter.name);
   catch(error: Prisma.PrismaClientKnownRequestError) {
+    console.log(error.meta);
+    console.log(error.name);
     if (error.code === 'P2025') {
       this.logger.warn(
         `Prisma P2025: ${error.meta?.cause ?? 'Record not found'}`,
@@ -22,7 +24,9 @@ export class PrismaExceptionFilter implements ExceptionFilter {
       this.logger.warn(
         `Prisma P2002 (unique constraint) on field(s): ${fields}`,
       );
-      throw new UniqueConstraintError('Unique constraint failed');
+      throw new UniqueConstraintError(
+        `Unique contraint on field(s): ${fields}`,
+      );
     }
 
     this.logger.error(`Unhandled Prisma error (${error.code})`, error.stack);

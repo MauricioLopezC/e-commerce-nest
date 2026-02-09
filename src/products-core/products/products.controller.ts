@@ -8,8 +8,6 @@ import {
   Delete,
   Query,
   ParseIntPipe,
-  UseFilters,
-  NotFoundException,
   Put,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
@@ -19,15 +17,10 @@ import { ListAllProductDto } from './dto/list-all-products.dto';
 import { PublicRoute } from 'src/auth/decorators/public-routes.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
-import { PrismaClientExceptionFilter } from 'src/common/filters/prisma-client-exception/prisma-client-exception.filter';
 import { ConnectCategoriesDto } from './dto/connect-categories.dto';
-import { NotFoundError } from 'src/common/errors/not-found-error';
 
-@UseFilters(PrismaClientExceptionFilter)
 @Controller('products')
 export class ProductsController {
-  //NOTE: PrismaClientExceptionFilter catch all PrismaClientKnownRequestError
-  //exceptions
   constructor(private readonly productsService: ProductsService) {}
 
   @Roles(Role.Admin)
@@ -45,9 +38,7 @@ export class ProductsController {
   @PublicRoute()
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    const productFound = await this.productsService.findOne(id);
-    if (!productFound) throw new NotFoundException('Product not found');
-    return productFound;
+    return await this.productsService.findOne(id);
   }
 
   @Roles(Role.Admin)
@@ -56,17 +47,13 @@ export class ProductsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    const updatedProduct = await this.productsService.update(
-      id,
-      updateProductDto,
-    );
-    return updatedProduct;
+    return await this.productsService.update(id, updateProductDto);
   }
 
   @Roles(Role.Admin)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.productsService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.productsService.remove(id);
   }
 
   @Roles(Role.Admin)
@@ -75,16 +62,10 @@ export class ProductsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() connectCategoriesDto: ConnectCategoriesDto,
   ) {
-    try {
-      return await this.productsService.connectCategories(
-        id,
-        connectCategoriesDto,
-      );
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw new NotFoundException(error.message);
-      }
-    }
+    return await this.productsService.connectCategories(
+      id,
+      connectCategoriesDto,
+    );
   }
 
   @Roles(Role.Admin)
@@ -93,16 +74,10 @@ export class ProductsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() connectCategoriesDto: ConnectCategoriesDto,
   ) {
-    try {
-      return await this.productsService.disconnectCategories(
-        id,
-        connectCategoriesDto,
-      );
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw new NotFoundException(error.message);
-      }
-    }
+    return await this.productsService.disconnectCategories(
+      id,
+      connectCategoriesDto,
+    );
   }
 
   @Roles(Role.Admin)
@@ -111,15 +86,9 @@ export class ProductsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() connectCategoriesDto: ConnectCategoriesDto,
   ) {
-    try {
-      return await this.productsService.replaceCategories(
-        id,
-        connectCategoriesDto,
-      );
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw new NotFoundException(error.message);
-      }
-    }
+    return await this.productsService.replaceCategories(
+      id,
+      connectCategoriesDto,
+    );
   }
 }

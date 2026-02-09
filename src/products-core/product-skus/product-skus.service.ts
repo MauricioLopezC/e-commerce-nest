@@ -6,6 +6,7 @@ import {
 import { UpdateProductSkusDto } from './dto/update-product-skus.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, ProductSku } from 'src/generated/prisma/client';
+import { NotFoundError } from 'src/common/errors/business-error';
 
 @Injectable()
 export class ProductSkusService {
@@ -49,6 +50,9 @@ export class ProductSkusService {
         images: true,
       },
     });
+    if (!sku) {
+      throw new NotFoundError('Product sku not found');
+    }
     return sku;
   }
 

@@ -2,9 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ImagesService } from './images.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { NotFoundError } from 'src/common/errors/not-found-error';
-import { UploadImageError } from 'src/common/errors/upload-image-error';
-import { ValidationError } from 'src/common/errors/validation-error';
+import {
+  NotFoundError,
+  UploadImageError,
+  ValidationError,
+} from 'src/common/errors/business-error';
 
 // Mock data and services
 const mockPrismaService = {
@@ -192,9 +194,7 @@ describe('ImagesService', () => {
       await expect(
         service.batchCreateAndUpload(files, metadata),
       ).rejects.toThrow(NotFoundError);
-      expect(
-        mockCloudinaryService.uploadMultipleFiles,
-      ).not.toHaveBeenCalled();
+      expect(mockCloudinaryService.uploadMultipleFiles).not.toHaveBeenCalled();
     });
 
     it('should throw UploadImageError if cloudinary upload fails', async () => {
@@ -210,3 +210,4 @@ describe('ImagesService', () => {
     });
   });
 });
+

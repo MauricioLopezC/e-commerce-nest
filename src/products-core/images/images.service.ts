@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { NotFoundError } from 'src/common/errors/not-found-error';
 import { CloudinaryResponse } from '../cloudinary/cloudinary-response';
-import { UploadImageError } from 'src/common/errors/upload-image-error';
-import { ValidationError } from 'src/common/errors/validation-error';
+import {
+  NotFoundError,
+  UploadImageError,
+  ValidationError,
+} from 'src/common/errors/business-error';
 
 @Injectable()
 export class ImagesService {

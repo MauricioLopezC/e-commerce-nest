@@ -17,7 +17,6 @@ import { UpdateUserDto } from './dtos/update-user-dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { ListAllUsersDto } from './dtos/list-all-users.dto';
-import { NotFoundError } from 'src/common/errors/not-found-error';
 
 @Controller('users')
 export class UsersController {
@@ -50,43 +49,24 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    try {
-      return await this.usersService.update(id, updateUserDto);
-    } catch (error) {
-      throw new NotFoundException('User does not exist');
-    }
+    return await this.usersService.update(id, updateUserDto);
   }
 
   @Roles(Role.Admin)
   @Delete(':id')
   async deleteUser(@Param('id', ParseIntPipe) id: number) {
-    try {
-      return await this.usersService.remove(id);
-    } catch (error) {
-      console.log(error);
-      throw new NotFoundException('User does not exist');
-    }
+    return await this.usersService.remove(id);
   }
 
   @Roles(Role.Admin)
   @Patch(':id/ban')
   async banUser(@Param('id', ParseIntPipe) id: number) {
-    try {
-      return await this.usersService.banUser(id);
-    } catch (error) {
-      if (error instanceof NotFoundError)
-        throw new NotFoundException(error.message);
-    }
+    return await this.usersService.banUser(id);
   }
 
   @Roles(Role.Admin)
   @Patch(':id/unban')
   async unBanUser(@Param('id', ParseIntPipe) id: number) {
-    try {
-      return await this.usersService.unBanUser(id);
-    } catch (error) {
-      if (error instanceof NotFoundError)
-        throw new NotFoundException(error.message);
-    }
+    return await this.usersService.unBanUser(id);
   }
 }

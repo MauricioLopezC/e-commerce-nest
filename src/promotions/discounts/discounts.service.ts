@@ -12,9 +12,11 @@ import {
   DiscountType,
   UpdateDiscountDto,
 } from './dto/update-discount.dto';
-import { NotFoundError } from 'src/common/errors/not-found-error';
-import { ValidationError } from 'src/common/errors/validation-error';
 import { ListAllDiscountsDto } from './dto/list-all-discounts.dto';
+import {
+  NotFoundError,
+  ValidationError,
+} from 'src/common/errors/business-error';
 
 @Injectable()
 export class DiscountsService {

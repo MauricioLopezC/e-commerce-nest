@@ -4,7 +4,6 @@ import { UpdateUserDto } from './dtos/update-user-dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderStatus, User } from 'src/generated/prisma/client';
 import { ListAllUsersDto } from './dtos/list-all-users.dto';
-import { NotFoundError } from 'src/common/errors/not-found-error';
 import { UsersListResponseDto } from './dtos/users-response.dto';
 
 @Injectable()
@@ -135,17 +134,13 @@ export class UsersService {
    * @param id id of user to ban
    */
   async banUser(id: number): Promise<User> {
-    try {
-      const bannedUser = await this.prisma.user.update({
-        where: { id },
-        data: {
-          isBanned: true,
-        },
-      });
-      return bannedUser;
-    } catch (error) {
-      throw new NotFoundError('user not found');
-    }
+    const bannedUser = await this.prisma.user.update({
+      where: { id },
+      data: {
+        isBanned: true,
+      },
+    });
+    return bannedUser;
   }
 
   /**
@@ -153,16 +148,12 @@ export class UsersService {
    * @param id id of user to ban
    */
   async unBanUser(id: number): Promise<User> {
-    try {
-      const bannedUser = await this.prisma.user.update({
-        where: { id },
-        data: {
-          isBanned: false,
-        },
-      });
-      return bannedUser;
-    } catch (error) {
-      throw new NotFoundError('user not found');
-    }
+    const bannedUser = await this.prisma.user.update({
+      where: { id },
+      data: {
+        isBanned: false,
+      },
+    });
+    return bannedUser;
   }
 }

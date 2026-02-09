@@ -2,15 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreateCartItemDto } from './dto/create-cart-item.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CartItem, Prisma } from 'src/generated/prisma/client';
-import { AlreadyIncludedError } from 'src/common/errors/already-included-error';
+import { CartItem } from 'src/generated/prisma/client';
 import { StockError } from './errors/stock-error';
-import { NotFoundError } from 'src/common/errors/not-found-error';
-import { ValidationError } from '../common/errors/validation-error';
 import {
-  operationFailedRecordNotFound,
-  uniqueConstraint,
-} from 'src/common/prisma-erros';
+  NotFoundError,
+  ValidationError,
+} from 'src/common/errors/business-error';
 
 @Injectable()
 export class CartItemsService {
@@ -36,26 +33,14 @@ export class CartItemsService {
 
     const cart = await this.prisma.cart.findUnique({ where: { userId } });
 
-    try {
-      return await this.prisma.cartItem.create({
-        data: {
-          cartId: cart.id,
-          productId: cartItemDto.productId,
-          productSkuId: cartItemDto.productSkuId,
-          quantity: cartItemDto.quantity,
-        },
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === uniqueConstraint
-      ) {
-        throw new AlreadyIncludedError(
-          'The product is already included or not found',
-        );
-      }
-      throw error;
-    }
+    return await this.prisma.cartItem.create({
+      data: {
+        cartId: cart.id,
+        productId: cartItemDto.productId,
+        productSkuId: cartItemDto.productSkuId,
+        quantity: cartItemDto.quantity,
+      },
+    });
   }
 
   async findAllByUserId(userId: number): Promise<CartItem[]> {
@@ -124,43 +109,23 @@ export class CartItemsService {
       }
     }
 
-    try {
-      return await this.prisma.cartItem.update({
-        where: {
-          id,
-          cartId: cart.id,
-        },
-        data: updateCartItemDto,
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === operationFailedRecordNotFound
-      )
-        throw new NotFoundError('Cart item not found');
-      throw error;
-    }
+    return await this.prisma.cartItem.update({
+      where: {
+        id,
+        cartId: cart.id,
+      },
+      data: updateCartItemDto,
+    });
   }
 
   async remove(userId: number, id: number): Promise<CartItem> {
     const cart = await this.prisma.cart.findUnique({ where: { userId } });
-    try {
-      const removedCartItem = await this.prisma.cartItem.delete({
-        where: {
-          id,
-          cartId: cart.id,
-        },
-      });
-      return removedCartItem;
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === operationFailedRecordNotFound
-      )
-        throw new NotFoundError('Cart item not found');
-
-      console.error(error);
-      throw error;
-    }
+    const removedCartItem = await this.prisma.cartItem.delete({
+      where: {
+        id,
+        cartId: cart.id,
+      },
+    });
+    return removedCartItem;
   }
 }

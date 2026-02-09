@@ -2,18 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from 'src/generated/prisma/client';
-import { NotFoundError } from 'src/common/errors/not-found-error';
 import { DiscountsService } from '../promotions/discounts/discounts.service';
-import { InternalServerError } from 'src/common/errors/internal-server-error';
-import { ValidationError } from 'src/common/errors/validation-error';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrderCreatedEvent } from './events/order-created.envent';
 import { ListAllOrdersDto } from './dto/list-all-orders.dto';
 import { parseOrderBy } from 'src/common/orderByParser';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import {
-  operationFailedRecordNotFound,
-} from 'src/common/prisma-erros';
+  NotFoundError,
+  ValidationError,
+} from 'src/common/errors/business-error';
 
 @Injectable()
 export class OrdersService {
@@ -69,80 +67,77 @@ export class OrdersService {
     const cartProductSkuIds = cartItems.map(
       (cartItem) => cartItem.productSkuId,
     );
-    try {
-      const result = await this.prisma.$transaction(async (tx) => {
-        //first check available stock
-        const productSkus = await tx.productSku.findMany({
-          where: {
-            id: {
-              in: cartProductSkuIds,
-            },
-          },
-        });
-        for (const productSku of productSkus) {
-          const cartItem = cartItems.find(
-            (cartItem) => cartItem.productSkuId === productSku.id,
-          );
-          if (cartItem.quantity > productSku.quantity) {
-            throw new ValidationError('There is not enough stock');
-          }
-        }
 
-        const createdOrder = await tx.order.create({
-          data: {
-            userId,
-            total,
-            finalTotal,
-            payment: {
-              create: createOrderDto.payment,
-            },
-            shipping: {
-              create: createOrderDto.shipping,
-            },
-            orderItems: {
-              create: orderItems,
-            },
-            discountAmount,
+    const result = await this.prisma.$transaction(async (tx) => {
+      //first check available stock
+      const productSkus = await tx.productSku.findMany({
+        where: {
+          id: {
+            in: cartProductSkuIds,
           },
-          include: {
-            orderItems: true,
-          },
-        });
-
-        await tx.cartItem.deleteMany({
-          where: {
-            cartId: cart.id,
-          },
-        });
-
-        const stockUpdates = createdOrder.orderItems.map((orderItem) => {
-          return tx.productSku.update({
-            where: {
-              id: orderItem.productSkuId,
-            },
-            data: {
-              quantity: {
-                decrement: orderItem.quantity,
-              },
-            },
-          });
-        });
-        await Promise.all(stockUpdates);
-        return createdOrder;
+        },
       });
-
-      if (result) {
-        const orderCreatedEvent = new OrderCreatedEvent();
-        orderCreatedEvent.orderId = result.id;
-        orderCreatedEvent.appliedDiscounts = appliedDiscounts;
-        orderCreatedEvent.userId = userId;
-        this.eventEmitter.emit('order.created', orderCreatedEvent);
+      for (const productSku of productSkus) {
+        const cartItem = cartItems.find(
+          (cartItem) => cartItem.productSkuId === productSku.id,
+        );
+        if (cartItem.quantity > productSku.quantity) {
+          throw new ValidationError('There is not enough stock');
+        }
       }
 
-      return result;
-    } catch (error) {
-      throw new InternalServerError('Error creating order');
+      const createdOrder = await tx.order.create({
+        data: {
+          userId,
+          total,
+          finalTotal,
+          payment: {
+            create: createOrderDto.payment,
+          },
+          shipping: {
+            create: createOrderDto.shipping,
+          },
+          orderItems: {
+            create: orderItems,
+          },
+          discountAmount,
+        },
+        include: {
+          orderItems: true,
+        },
+      });
+
+      await tx.cartItem.deleteMany({
+        where: {
+          cartId: cart.id,
+        },
+      });
+
+      const stockUpdates = createdOrder.orderItems.map((orderItem) => {
+        return tx.productSku.update({
+          where: {
+            id: orderItem.productSkuId,
+          },
+          data: {
+            quantity: {
+              decrement: orderItem.quantity,
+            },
+          },
+        });
+      });
+      await Promise.all(stockUpdates);
+      return createdOrder;
+    });
+
+    if (result) {
+      const orderCreatedEvent = new OrderCreatedEvent();
+      orderCreatedEvent.orderId = result.id;
+      orderCreatedEvent.appliedDiscounts = appliedDiscounts;
+      orderCreatedEvent.userId = userId;
+      this.eventEmitter.emit('order.created', orderCreatedEvent);
     }
+
+    return result;
   }
 
   async findAll(query: ListAllOrdersDto) {
@@ -224,39 +219,19 @@ export class OrdersService {
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto) {
-    try {
-      return await this.prisma.order.update({
-        where: {
-          id,
-        },
-        data: updateOrderDto,
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === operationFailedRecordNotFound
-      ) {
-        throw new NotFoundError(`Order with id:${id} not found`);
-      }
-      throw error;
-    }
+    return await this.prisma.order.update({
+      where: {
+        id,
+      },
+      data: updateOrderDto,
+    });
   }
 
   async delete(id: number) {
-    try {
-      const order = await this.prisma.order.delete({
-        where: { id },
-      });
-      return order;
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === operationFailedRecordNotFound
-      ) {
-        throw new NotFoundError(`Order with id:${id} not found`);
-      }
-      throw error;
-    }
+    const order = await this.prisma.order.delete({
+      where: { id },
+    });
+    return order;
   }
 
   async findAllByUserId(userId: number) {

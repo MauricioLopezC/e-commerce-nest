@@ -11,7 +11,6 @@ import {
   Post,
   UploadedFile,
   UploadedFiles,
-  UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
 import { ImagesService } from './images.service';
@@ -19,13 +18,11 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { CreateImageDto } from './dto/create-image.dto';
-import { PrismaClientExceptionFilter } from 'src/common/filters/prisma-client-exception/prisma-client-exception.filter';
-import { NotFoundError } from '../../common/errors/not-found-error';
 import { CloudinaryResponse } from '../cloudinary/cloudinary-response';
 import { Throttle } from '@nestjs/throttler';
+import { NotFoundError } from 'src/common/errors/business-error';
 
 @Throttle({ default: { ttl: 60000, limit: 5 } })
-@UseFilters(PrismaClientExceptionFilter)
 @Controller('images')
 @Roles(Role.Admin)
 export class ImagesController {

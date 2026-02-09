@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersFavoritesController } from './usersFavoritesController';
+import { UsersFavoritesController } from './favorites.controler';
 import { FavoritesService } from './favorites.service';
 
 describe('FavoritesController', () => {
