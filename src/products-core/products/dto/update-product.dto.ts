@@ -1,4 +1,5 @@
 import {
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -24,11 +25,7 @@ export class UpdateProductDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
-  category: string;
-
-  @IsString()
-  @IsNotEmpty()
+  @IsEnum(Sex)
   @IsOptional()
   sex: Sex;
 }
