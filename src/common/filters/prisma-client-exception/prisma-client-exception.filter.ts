@@ -1,4 +1,4 @@
-import { Catch, ExceptionFilter, Logger } from '@nestjs/common';
+import { Catch, ExceptionFilter, Logger, InternalServerErrorException } from '@nestjs/common';
 import {
   NotFoundError,
   UniqueConstraintError,
@@ -31,6 +31,6 @@ export class PrismaExceptionFilter implements ExceptionFilter {
 
     this.logger.error(`Unhandled Prisma error (${error.code})`, error.stack);
 
-    throw error;
+    throw new InternalServerErrorException();
   }
 }

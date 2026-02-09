@@ -10,7 +10,10 @@ import {
   NotFoundError,
   UniqueConstraintError,
 } from 'src/common/errors/business-error';
-import { prismaUniqueConstraintError } from 'src/common/prisma-erros';
+import {
+  prismaForeignKeyConstraintError,
+  prismaUniqueConstraintError,
+} from 'src/common/prisma-erros';
 
 @Injectable()
 export class ProductSkusService {
@@ -38,6 +41,13 @@ export class ProductSkusService {
         throw new UniqueConstraintError(
           `Product sku with size: ${createProductSkusDto.size} and color: ${createProductSkusDto.color} already exists`,
         );
+
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === prismaForeignKeyConstraintError
+      )
+        throw new NotFoundError(`Product with id ${productId} not found`);
+
       throw error;
     }
   }

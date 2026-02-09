@@ -1,4 +1,5 @@
 export const prismaUniqueConstraintError = 'P2002';
+export const prismaForeignKeyConstraintError = 'P2003';
 
 // export const valueTooLong = 'P2000';
 // export const foreignKeyConstraint = 'P2003';
