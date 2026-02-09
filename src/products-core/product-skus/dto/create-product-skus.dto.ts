@@ -2,19 +2,24 @@ import { Transform, Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsDefined,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsObject,
-  IsString,
   ValidateNested,
 } from 'class-validator';
+import { IsProductSize } from '../decorators/is-product-size.decorator';
+import { Color } from '../enums/color.enum';
+
 export class CreateProductSkusDto {
-  @IsString()
+  @IsProductSize()
   @IsNotEmpty()
+  @Transform(({ value }) => value?.toUpperCase())
   size: string;
 
-  @IsString()
+  @IsEnum(Color)
   @IsNotEmpty()
+  @Transform(({ value }) => value?.toUpperCase())
   color: string;
 
   @IsInt()
