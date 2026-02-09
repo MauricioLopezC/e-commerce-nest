@@ -13,17 +13,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-
-enum DiscountType {
-  PERCENTAGE = 'PERCENTAGE',
-  FIXED = 'FIXED',
-}
-
-enum ApplicableTo {
-  PRODUCT = 'PRODUCT',
-  CATEGORY = 'CATEGORY',
-  GENERAL = 'GENERAL',
-}
+import { ApplicableTo, DiscountType } from '../enums/enums';
 
 export class CreateDiscountDto {
   @IsString()

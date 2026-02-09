@@ -14,7 +14,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { ApplicableTo } from './update-discount.dto';
+import { ApplicableTo } from '../enums/enums';
 
 @ValidatorConstraint({ name: 'isValidOrderBy', async: false })
 class IsValidOrderByConstraint implements ValidatorConstraintInterface {

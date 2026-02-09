@@ -7,16 +7,13 @@ import {
 } from './types/discount-types';
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import { Discount, Prisma } from 'src/generated/prisma/client';
-import {
-  ApplicableTo,
-  DiscountType,
-  UpdateDiscountDto,
-} from './dto/update-discount.dto';
 import { ListAllDiscountsDto } from './dto/list-all-discounts.dto';
 import {
   NotFoundError,
   ValidationError,
 } from 'src/common/errors/business-error';
+import { ApplicableTo, DiscountType } from './enums/enums';
+import { UpdateDiscountDto } from './dto/update-discount.dto';
 
 @Injectable()
 export class DiscountsService {
@@ -94,8 +91,8 @@ export class DiscountsService {
 
     if (
       body.applicableTo === ApplicableTo.GENERAL &&
-      products.length > 0 &&
-      categories.length > 0
+      products?.length > 0 &&
+      categories?.length > 0
     ) {
       throw new ValidationError(
         'We cannot receive products or categories if the discount is generally applicable',
@@ -103,13 +100,13 @@ export class DiscountsService {
     }
 
     if (body.applicableTo === ApplicableTo.PRODUCT) {
-      if (!products || products.length === 0) {
+      if (!products || products?.length === 0) {
         throw new ValidationError('ProductIds list is required');
       }
       connectedProducts = products.map((productId) => ({ id: productId }));
     }
     if (body.applicableTo === ApplicableTo.CATEGORY) {
-      if (categories || categories.length === 0) {
+      if (categories || categories?.length === 0) {
         throw new ValidationError('CategoryIds list is required');
       }
       connectedCategories = categories.map((categoryId) => ({
