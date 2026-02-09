@@ -4,17 +4,30 @@ import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Favorite, Prisma } from 'src/generated/prisma/client';
 import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
-import { NotFoundError } from 'src/common/errors/business-error';
+import {
+  NotFoundError,
+  UniqueConstraintError,
+} from 'src/common/errors/business-error';
+import { prismaUniqueConstraintError } from 'src/common/prisma-erros';
 
 @Injectable()
 export class FavoritesService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: number, createFavoriteDto: CreateFavoriteDto) {
-    const createdFavorite = await this.prisma.favorite.create({
-      data: { userId: userId, productId: createFavoriteDto.productId },
-    });
-    return createdFavorite;
+    try {
+      return await this.prisma.favorite.create({
+        data: { userId: userId, productId: createFavoriteDto.productId },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === prismaUniqueConstraintError
+      ) {
+        throw new UniqueConstraintError('Favorite already exists');
+      }
+      throw error;
+    }
   }
 
   async findAllByUserId(userId: number, query: ListAllFavoritesDto) {

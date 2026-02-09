@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateCartItemDto } from './dto/create-cart-item.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CartItem } from 'src/generated/prisma/client';
+import { CartItem, Prisma } from 'src/generated/prisma/client';
 import { StockError } from './errors/stock-error';
 import {
   NotFoundError,
+  UniqueConstraintError,
   ValidationError,
 } from 'src/common/errors/business-error';
+import { prismaUniqueConstraintError } from 'src/common/prisma-erros';
 
 @Injectable()
 export class CartItemsService {
@@ -33,14 +35,26 @@ export class CartItemsService {
 
     const cart = await this.prisma.cart.findUnique({ where: { userId } });
 
-    return await this.prisma.cartItem.create({
-      data: {
-        cartId: cart.id,
-        productId: cartItemDto.productId,
-        productSkuId: cartItemDto.productSkuId,
-        quantity: cartItemDto.quantity,
-      },
-    });
+    try {
+      return await this.prisma.cartItem.create({
+        data: {
+          cartId: cart.id,
+          productId: cartItemDto.productId,
+          productSkuId: cartItemDto.productSkuId,
+          quantity: cartItemDto.quantity,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === prismaUniqueConstraintError
+      ) {
+        throw new UniqueConstraintError(
+          'Cart item with product sku id already exists',
+        );
+      }
+      throw error;
+    }
   }
 
   async findAllByUserId(userId: number): Promise<CartItem[]> {

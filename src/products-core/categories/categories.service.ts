@@ -2,18 +2,33 @@ import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Category } from 'src/generated/prisma/client';
-import { NotFoundError } from 'src/common/errors/business-error';
+import { Category, Prisma } from 'src/generated/prisma/client';
+import {
+  NotFoundError,
+  UniqueConstraintError,
+} from 'src/common/errors/business-error';
+import { prismaUniqueConstraintError } from 'src/common/prisma-erros';
 
 @Injectable()
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const category = await this.prisma.category.create({
-      data: createCategoryDto,
-    });
-    return category;
+    try {
+      return await this.prisma.category.create({
+        data: createCategoryDto,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === prismaUniqueConstraintError
+      ) {
+        throw new UniqueConstraintError(
+          `Category with name: ${CreateCategoryDto.name} already exists`,
+        );
+      }
+      throw error;
+    }
   }
 
   async findAll(): Promise<Category[]> {

@@ -6,7 +6,11 @@ import {
 import { UpdateProductSkusDto } from './dto/update-product-skus.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, ProductSku } from 'src/generated/prisma/client';
-import { NotFoundError } from 'src/common/errors/business-error';
+import {
+  NotFoundError,
+  UniqueConstraintError,
+} from 'src/common/errors/business-error';
+import { prismaUniqueConstraintError } from 'src/common/prisma-erros';
 
 @Injectable()
 export class ProductSkusService {
@@ -17,15 +21,25 @@ export class ProductSkusService {
     productId: number,
     createProductSkusDto: CreateProductSkusDto,
   ): Promise<ProductSku> {
-    const productSku = await this.prisma.productSku.create({
-      data: {
-        productId: productId,
-        size: createProductSkusDto.size,
-        color: createProductSkusDto.color,
-        quantity: createProductSkusDto.quantity,
-      },
-    });
-    return productSku;
+    try {
+      return await this.prisma.productSku.create({
+        data: {
+          productId: productId,
+          size: createProductSkusDto.size,
+          color: createProductSkusDto.color,
+          quantity: createProductSkusDto.quantity,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === prismaUniqueConstraintError
+      )
+        throw new UniqueConstraintError(
+          `Product sku with size: ${createProductSkusDto.size} and color: ${createProductSkusDto.color} already exists`,
+        );
+      throw error;
+    }
   }
 
   async findAll(productId: number): Promise<ProductSku[]> {
