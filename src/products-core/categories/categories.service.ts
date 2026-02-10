@@ -24,7 +24,7 @@ export class CategoriesService {
         error.code === prismaUniqueConstraintError
       ) {
         throw new UniqueConstraintError(
-          `Category with name: ${CreateCategoryDto.name} already exists`,
+          `Category with name: ${createCategoryDto.name} already exists`,
         );
       }
       throw error;
