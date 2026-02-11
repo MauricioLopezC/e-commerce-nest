@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { PrismaExceptionFilter } from './common/filters/prisma-client-exception/prisma-client-exception.filter';
 import { BusinessExceptionFilter } from './common/filters/business-exception/business-exception.filter';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +20,15 @@ async function bootstrap() {
     new PrismaExceptionFilter(),
     new BusinessExceptionFilter(),
   );
+
+  const config = new DocumentBuilder()
+    .setTitle('Cats example')
+    .setDescription('The cats API description')
+    .setVersion('1.0')
+    .addTag('cats')
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
 
   app.enableShutdownHooks();
   app.use(helmet());
