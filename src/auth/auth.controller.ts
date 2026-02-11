@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dtos/create-user-dto';
 import { RegisterService } from './register/register.service';
-import { LoginDto } from './login/dto/LoginDto';
+import { LoginDto } from './login/dto/login.dto';
 import { LoginService } from './login/login.service';
 import { PublicRoute } from './decorators/public-routes.decorator';
 import { RolesGuard } from './guards/roles.guard';
