@@ -44,7 +44,7 @@ export class ListAllOrdersDto {
   @Max(20)
   @IsNotEmpty()
   @Transform(({ value }) => Number(value)) //el atributo viene como un string y lo pasamos a number
-  limit: number = 10;
+  limit?: number = 10;
 
   @IsOptional()
   @IsInt()
@@ -52,28 +52,28 @@ export class ListAllOrdersDto {
   @Max(100)
   @IsNotEmpty()
   @Transform(({ value }) => Number(value))
-  page: number = 1;
+  page?: number = 1;
 
   //filters section
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @IsEnum(OrderStatus)
-  status: OrderStatus;
+  status?: OrderStatus;
 
   @IsString()
   @IsOptional()
-  email: string; //search for emails
+  email?: string; //search for emails
 
   @IsOptional()
   @Transform(({ value }) => new Date(value))
   @IsDate()
-  startDate: Date;
+  startDate?: Date;
 
   @IsOptional()
   @Transform(({ value }) => new Date(value))
   @IsDate()
-  endDate: Date;
+  endDate?: Date;
 
   //order secction
   @IsOptional()
@@ -81,5 +81,5 @@ export class ListAllOrdersDto {
   @IsArray()
   @IsString({ each: true })
   @Validate(IsValidOrderByConstraint)
-  orderBy: string[];
+  orderBy?: string[];
 }

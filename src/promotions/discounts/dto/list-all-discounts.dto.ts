@@ -41,7 +41,7 @@ export class ListAllDiscountsDto {
   @Max(20)
   @IsNotEmpty()
   @Transform(({ value }) => Number(value)) //el atributo viene como un string y lo pasamos a number
-  limit: number = 10;
+  limit?: number = 10;
 
   @IsOptional()
   @IsInt()
@@ -49,30 +49,30 @@ export class ListAllDiscountsDto {
   @Max(100)
   @IsNotEmpty()
   @Transform(({ value }) => Number(value))
-  page: number = 1;
+  page?: number = 1;
 
   //filters seccion
   @IsOptional()
   @Transform(({ value }) => value === 'true') //el atributo viene como un string y lo pasamos a number
   @IsBoolean()
-  isActive: boolean;
+  isActive?: boolean;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @IsEnum(DiscountType)
-  discountType: DiscountType;
+  discountType?: DiscountType;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @IsEnum(ApplicableTo)
-  applicableTo: ApplicableTo;
+  applicableTo?: ApplicableTo;
 
   @IsOptional()
   @Transform(({ value }) => (Array.isArray(value) ? value : [value])) // Asegurarse de que siempre sea un array
   @IsArray()
   @IsString({ each: true })
   @Validate(IsValidOrderByConstraint)
-  orderBy: string[];
+  orderBy?: string[];
 }

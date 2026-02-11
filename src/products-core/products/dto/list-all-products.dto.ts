@@ -44,7 +44,7 @@ export class ListAllProductDto {
   @Max(20)
   @IsNotEmpty()
   @Transform(({ value }) => Number(value)) //el atributo viene como un string y lo pasamos a number
-  limit: number = 10;
+  limit?: number = 10;
 
   @IsOptional()
   @IsInt()
@@ -52,23 +52,23 @@ export class ListAllProductDto {
   @Max(100)
   @IsNotEmpty()
   @Transform(({ value }) => Number(value))
-  page: number = 1;
+  page?: number = 1;
 
   //filters seccion
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  category: string;
+  category?: string;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name?: string;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  sex: Sex;
+  sex?: Sex;
 
   //order secction
   @IsOptional()
@@ -76,7 +76,7 @@ export class ListAllProductDto {
   @IsArray()
   @IsString({ each: true })
   @Validate(IsValidOrderByConstraint)
-  orderBy: string[];
+  orderBy?: string[];
 
   //search secction
 }

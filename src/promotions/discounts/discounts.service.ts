@@ -60,6 +60,7 @@ export class DiscountsService {
       }
     }
 
+    //TODO: apply orderBy filter
     delete query.limit;
     delete query.page;
     delete query.orderBy;
