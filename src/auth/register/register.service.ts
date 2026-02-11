@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
-import { CreateUserDto } from 'src/users/dtos/create-user-dto';
+import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UniqueConstraintError } from 'src/common/errors/business-error';
 import { UserResponse } from '../dto/register-response.dto';
