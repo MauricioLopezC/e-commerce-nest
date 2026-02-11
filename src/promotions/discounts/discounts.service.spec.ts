@@ -1,10 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DiscountsService } from './discounts.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  ApplicableTo,
-  DiscountType,
-} from 'src/promotions/discounts/dto/update-discount.dto';
+import { ApplicableTo, DiscountType } from './enums/enums';
 import {
   CartItemsWithProductAndCategories,
   DiscountWithProductsAndCategories,

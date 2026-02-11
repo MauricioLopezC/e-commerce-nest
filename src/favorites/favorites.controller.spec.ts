@@ -8,7 +8,15 @@ describe('FavoritesController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersFavoritesController],
-      providers: [FavoritesService],
+      providers: [
+        {
+          provide: FavoritesService,
+          useValue: {
+            // Add mock methods here based on controller usage
+            findAllByUser: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<UsersFavoritesController>(UsersFavoritesController);
