@@ -12,6 +12,7 @@ import {
   NotFoundError,
   ValidationError,
 } from 'src/common/errors/business-error';
+import { UserSelect } from '../users/user-constants';
 
 @Injectable()
 export class OrdersService {
@@ -177,15 +178,7 @@ export class OrdersService {
         payment: true,
         shipping: true,
         user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            role: true,
-            createdAt: true,
-            updatedAt: true,
-          },
+          select: UserSelect,
         },
         discounts: {
           include: { discount: true },

@@ -21,6 +21,11 @@ import { CreateImageDto } from './dto/create-image.dto';
 import { CloudinaryResponse } from '../cloudinary/cloudinary-response';
 import { Throttle } from '@nestjs/throttler';
 import { NotFoundError } from 'src/common/errors/business-error';
+import { ApiOkResponse } from '@nestjs/swagger';
+import {
+  DeleteImageResponseDto,
+  ImageResponseDto,
+} from './dto/images-response.dto';
 
 @Throttle({ default: { ttl: 60000, limit: 5 } })
 @Controller('images')
@@ -28,6 +33,7 @@ import { NotFoundError } from 'src/common/errors/business-error';
 export class ImagesController {
   constructor(private imagesService: ImagesService) {}
 
+  @ApiOkResponse({ type: ImageResponseDto })
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async createAndUpload(
@@ -65,6 +71,7 @@ export class ImagesController {
     }
   }
 
+  @ApiOkResponse({ type: [ImageResponseDto] })
   @Post('/batch')
   @UseInterceptors(FilesInterceptor('files', 10))
   async batchCreateAndUpload(
@@ -125,6 +132,7 @@ export class ImagesController {
     }
   }
 
+  @ApiOkResponse({ type: DeleteImageResponseDto })
   @Delete(':id')
   @Roles(Role.Admin)
   @UseInterceptors(FileInterceptor('file'))

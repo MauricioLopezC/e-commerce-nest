@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderStatus, User } from 'src/generated/prisma/client';
 import { ListAllUsersDto } from './dtos/list-all-users.dto';
 import { UsersListResponseDto } from './dtos/users-response.dto';
+import { UserSelect } from './user-constants';
 
 @Injectable()
 export class UsersService {
@@ -32,18 +33,7 @@ export class UsersService {
     const offset = (page - 1) * limit; //for pagination offset
 
     const users = await this.prisma.user.findMany({
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        verifiedEmail: true,
-        role: true,
-        isBanned: true,
-        profileImage: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: UserSelect,
       take: limit,
       skip: offset,
     });
