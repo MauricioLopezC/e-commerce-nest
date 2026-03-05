@@ -6,7 +6,7 @@ import {
   DiscountWithProductsAndCategories,
 } from './types/discount-types';
 import { CreateDiscountDto } from './dto/create-discount.dto';
-import { Discount, Prisma } from 'src/generated/prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { ListAllDiscountsDto } from './dto/list-all-discounts.dto';
 import {
   NotFoundError,
@@ -70,7 +70,7 @@ export class DiscountsService {
       where: query,
       include: {
         categories: true,
-        products: true,
+        products: { include: { images: true, categories: true } },
       },
     });
 
@@ -85,7 +85,7 @@ export class DiscountsService {
     };
   }
 
-  async create(body: CreateDiscountDto): Promise<Discount> {
+  async create(body: CreateDiscountDto) {
     const { products, categories, ...data } = body;
     let connectedProducts: { id: number }[];
     let connectedCategories: { id: number }[];
@@ -133,20 +133,22 @@ export class DiscountsService {
           connect: connectedCategories,
         },
       },
+      include: {
+        categories: true,
+        products: { include: { images: true, categories: true } },
+      },
     });
     return discount;
   }
 
-  async findOne(id: number): Promise<DiscountWithProductsAndCategories> {
+  async findOne(id: number) {
     const discount = await this.prisma.discount.findUnique({
       where: {
         id,
       },
       include: {
         products: {
-          include: {
-            images: true,
-          },
+          include: { images: true, categories: true },
         },
         categories: true,
       },
@@ -156,7 +158,7 @@ export class DiscountsService {
     return discount;
   }
 
-  async update(id: number, body: UpdateDiscountDto): Promise<Discount> {
+  async update(id: number, body: UpdateDiscountDto) {
     const discount = await this.prisma.discount.findUnique({
       where: {
         id: id,
@@ -222,14 +224,22 @@ export class DiscountsService {
           },
         }),
       },
+      include: {
+        categories: true,
+        products: { include: { images: true, categories: true } },
+      },
     });
     return updatedDiscount;
   }
 
-  async delete(id: number): Promise<Discount> {
+  async delete(id: number) {
     try {
       return await this.prisma.discount.delete({
         where: { id },
+        include: {
+          categories: true,
+          products: { include: { images: true, categories: true } },
+        },
       });
     } catch (error) {
       throw new NotFoundError('discount not found');

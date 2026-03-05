@@ -13,6 +13,7 @@ import {
   ValidationError,
 } from 'src/common/errors/business-error';
 import { UserSelect } from '../users/user-constants';
+import { OrderListWithRelations } from './mapper';
 
 @Injectable()
 export class OrdersService {
@@ -104,7 +105,15 @@ export class OrdersService {
           discountAmount,
         },
         include: {
-          orderItems: true,
+          orderItems: {
+            include: {
+              product: { include: { images: true, categories: true } },
+              productSku: true,
+            },
+          },
+          payment: true,
+          shipping: true,
+          discounts: { include: { discount: true } },
         },
       });
 
@@ -141,7 +150,7 @@ export class OrdersService {
     return result;
   }
 
-  async findAll(query: ListAllOrdersDto) {
+  async findAll(query: ListAllOrdersDto): Promise<OrderListWithRelations> {
     const limit = query.limit;
     const page = query.page;
     const offset = (page - 1) * limit;
@@ -171,7 +180,12 @@ export class OrdersService {
       include: {
         orderItems: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: true,
+                categories: true,
+              },
+            },
             productSku: true,
           },
         },
@@ -206,6 +220,22 @@ export class OrdersService {
       where: {
         id,
       },
+      include: {
+        orderItems: {
+          include: {
+            product: true,
+            productSku: true,
+          },
+        },
+        payment: true,
+        shipping: true,
+        user: {
+          select: UserSelect,
+        },
+        discounts: {
+          include: { discount: true },
+        },
+      },
     });
     if (!order) throw new NotFoundError(`Order with id:${id} not found`);
     return order;
@@ -217,17 +247,48 @@ export class OrdersService {
         id,
       },
       data: updateOrderDto,
+      include: {
+        orderItems: {
+          include: {
+            product: true,
+            productSku: true,
+          },
+        },
+        payment: true,
+        shipping: true,
+        user: {
+          select: UserSelect,
+        },
+        discounts: {
+          include: { discount: true },
+        },
+      },
     });
   }
 
   async delete(id: number) {
-    const order = await this.prisma.order.delete({
+    return await this.prisma.order.delete({
       where: { id },
+      include: {
+        orderItems: {
+          include: {
+            product: true,
+            productSku: true,
+          },
+        },
+        payment: true,
+        shipping: true,
+        user: {
+          select: UserSelect,
+        },
+        discounts: {
+          include: { discount: true },
+        },
+      },
     });
-    return order;
   }
 
-  async findAllByUserId(userId: number) {
+  async findAllByUserId(userId: number): Promise<OrderListWithRelations> {
     const orders = await this.prisma.order.findMany({
       where: {
         userId,
@@ -236,14 +297,14 @@ export class OrdersService {
         orderItems: {
           include: {
             product: {
-              include: { images: true },
+              include: { images: true, categories: true },
             },
             productSku: true,
           },
         },
         payment: true,
         shipping: true,
-        discounts: true,
+        discounts: { include: { discount: true } },
       },
     });
     const aggregate = await this.prisma.order.aggregate({
@@ -273,11 +334,13 @@ export class OrdersService {
       include: {
         orderItems: {
           include: {
-            product: {
-              include: { images: true },
-            },
+            product: { include: { images: true, categories: true } },
+            productSku: true,
           },
         },
+        payment: true,
+        shipping: true,
+        discounts: { include: { discount: true } },
       },
     });
     if (!order) throw new NotFoundError(`Order with id:${id} not found`);

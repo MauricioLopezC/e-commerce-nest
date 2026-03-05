@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetTotalSalesByMonthDto } from './dto/get-total-sales.dto';
 import { OrderStatus } from 'src/generated/prisma/client';
-import { FilledSalesByMonth, SaleByProduct, TotalSalesByMonth } from './types';
 import { GetSalesByCategoryDto } from './dto/get-sales-by-category.dto';
 import { GetSalesByProductDto } from './dto/get-sales-by-product.dto';
 import { GetSalesByUserDto } from './dto/get-sales-by-user.dto';
@@ -10,6 +9,12 @@ import {
   getSalesByCategory,
   getSalesByProduct,
 } from 'src/generated/prisma/sql';
+import {
+  SaleByCategory,
+  SaleByProduct,
+  SaleByUser,
+  TotalSalesByMonth,
+} from './dto/statistics-response.dto';
 
 @Injectable()
 export class StatisticsService {
@@ -35,7 +40,7 @@ export class StatisticsService {
     data: TotalSalesByMonth[],
     startDate: Date,
     endDate: Date,
-  ): FilledSalesByMonth[] {
+  ): TotalSalesByMonth[] {
     if (startDate > endDate) return [];
 
     // Crear un Map para lookup rápido de ventas por mes
@@ -46,7 +51,7 @@ export class StatisticsService {
       ]),
     );
 
-    const result: FilledSalesByMonth[] = [];
+    const result: TotalSalesByMonth[] = [];
 
     // Arrancar desde el primer mes del startDate
     const currentDate = new Date(
@@ -71,7 +76,7 @@ export class StatisticsService {
     return result;
   }
 
-  async salesByUser(query: GetSalesByUserDto) {
+  async salesByUser(query: GetSalesByUserDto): Promise<SaleByUser[]> {
     const totalSalesByUser = await this.prisma.order.groupBy({
       by: 'userId',
       orderBy: {
@@ -103,13 +108,20 @@ export class StatisticsService {
     });
     const result = totalSalesByUser.map((item) => {
       const user = users.find((user) => user.id === item.userId);
-      return { ...item, userName: user.firstName };
+      return {
+        _count: item._count,
+        _sum: { finalTotal: item._sum.finalTotal.toNumber() },
+        userId: item.userId,
+        userName: user.firstName,
+      };
     });
 
     return result;
   }
 
-  async salesByCategory(query: GetSalesByCategoryDto) {
+  async salesByCategory(
+    query: GetSalesByCategoryDto,
+  ): Promise<SaleByCategory[]> {
     const startDate = query.startDate;
     const endDate = query.endDate;
     const result = await this.prisma.$queryRawTyped(

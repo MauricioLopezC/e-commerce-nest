@@ -15,6 +15,7 @@ import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { CurrentUser } from '../common/current-user/current-user.decorator';
 import { JwtPayload } from '../common/types/JwtPayload';
+import { mapToFavoriteResponse, mapToFavoritesListResponse } from './mapper';
 
 @Controller('/me/favorites')
 export class MeFavoritesController {
@@ -25,15 +26,19 @@ export class MeFavoritesController {
     @Body() createFavoriteDto: CreateFavoriteDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return await this.favoritesService.create(user.id, createFavoriteDto);
+    return mapToFavoriteResponse(
+      await this.favoritesService.create(user.id, createFavoriteDto),
+    );
   }
 
   @Get()
-  findAllByUserId(
+  async findAllByUserId(
     @CurrentUser() user: JwtPayload,
     @Query() query: ListAllFavoritesDto,
   ) {
-    return this.favoritesService.findAllByUserId(user.id, query);
+    return mapToFavoritesListResponse(
+      await this.favoritesService.findAllByUserId(user.id, query),
+    );
   }
 
   @Get(':id')
@@ -41,7 +46,9 @@ export class MeFavoritesController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: JwtPayload,
   ) {
-    return await this.favoritesService.findOneByUserId(user.id, id);
+    return mapToFavoriteResponse(
+      await this.favoritesService.findOneByUserId(user.id, id),
+    );
   }
 
   @Patch(':id')
@@ -50,7 +57,9 @@ export class MeFavoritesController {
     @Body() updateFavoriteDto: UpdateFavoriteDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return await this.favoritesService.update(user.id, id, updateFavoriteDto);
+    return mapToFavoriteResponse(
+      await this.favoritesService.update(user.id, id, updateFavoriteDto),
+    );
   }
 
   @Delete(':id')
@@ -58,6 +67,8 @@ export class MeFavoritesController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: JwtPayload,
   ) {
-    return await this.favoritesService.removeByUserId(user.id, id);
+    return mapToFavoriteResponse(
+      await this.favoritesService.removeByUserId(user.id, id),
+    );
   }
 }

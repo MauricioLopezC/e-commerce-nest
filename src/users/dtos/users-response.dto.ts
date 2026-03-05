@@ -9,8 +9,8 @@ export class UserResponseDto {
   profileImage: string;
   createdAt: Date;
   updatedAt: Date;
-  totalSpent: number;
-  totalOrders: number;
+  totalSpent?: number;
+  totalOrders?: number;
 }
 
 class Metadata {

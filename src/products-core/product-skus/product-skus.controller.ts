@@ -22,10 +22,10 @@ import {
   ProductSkuResponseDto,
   ProductSkuBatchUpdateResponse,
 } from './dto/product-skus-response.dto';
+import { mapToProductSkuResponseDto } from './mapper';
 
 @Controller('products/:productId/product-skus')
 export class ProductSkusController {
-  //images could be passes in array on crateProductskuDto
   constructor(private readonly productSkusService: ProductSkusService) {}
 
   @ApiCreatedResponse({ type: ProductSkuResponseDto })
@@ -35,9 +35,8 @@ export class ProductSkusController {
     @Param('productId', ParseIntPipe) productId: number,
     @Body() createProductSkusDto: CreateProductSkusDto,
   ) {
-    return await this.productSkusService.create(
-      productId,
-      createProductSkusDto,
+    return mapToProductSkuResponseDto(
+      await this.productSkusService.create(productId, createProductSkusDto),
     );
   }
 
@@ -45,7 +44,8 @@ export class ProductSkusController {
   @PublicRoute()
   @Get()
   async findAll(@Param('productId', ParseIntPipe) productId: number) {
-    return await this.productSkusService.findAll(productId);
+    const skus = await this.productSkusService.findAll(productId);
+    return skus.map((sku) => mapToProductSkuResponseDto(sku));
   }
 
   @ApiOkResponse({ type: ProductSkuResponseDto })
@@ -55,7 +55,9 @@ export class ProductSkusController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return await this.productSkusService.findOne(productId, id);
+    return mapToProductSkuResponseDto(
+      await this.productSkusService.findOne(productId, id),
+    );
   }
 
   @ApiOkResponse({ type: ProductSkuResponseDto })
@@ -66,10 +68,8 @@ export class ProductSkusController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductSkusDto: UpdateProductSkusDto,
   ) {
-    return await this.productSkusService.update(
-      productId,
-      id,
-      updateProductSkusDto,
+    return mapToProductSkuResponseDto(
+      await this.productSkusService.update(productId, id, updateProductSkusDto),
     );
   }
 
@@ -80,7 +80,9 @@ export class ProductSkusController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return await this.productSkusService.remove(productId, id);
+    return mapToProductSkuResponseDto(
+      await this.productSkusService.remove(productId, id),
+    );
   }
 
   @ApiOkResponse({ type: ProductSkuBatchUpdateResponse })

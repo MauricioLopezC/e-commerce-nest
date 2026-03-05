@@ -8,3 +8,8 @@ export interface FavoriteResponseDto {
   updatedAt: Date;
   product: ProductResponseDto;
 }
+
+export class FavoritesListResponseDto {
+  favorites: FavoriteResponseDto[];
+  metadata: { _count: number };
+}

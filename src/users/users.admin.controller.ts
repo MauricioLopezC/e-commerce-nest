@@ -12,35 +12,34 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { User } from 'src/generated/prisma/client';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { ListAllUsersDto } from './dtos/list-all-users.dto';
+import { mapToUserResponse, mapToUsersListResponse } from './mapper';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
-  //All these endopoints are available only to the admin user
+
   @Roles(Role.Admin)
   @Post()
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
-    const user = this.usersService.create(createUserDto);
-    return user;
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return mapToUserResponse(await this.usersService.create(createUserDto));
   }
 
   @Roles(Role.Admin)
   @Get()
-  findAllUsers(@Query() query: ListAllUsersDto) {
-    return this.usersService.findAll(query);
+  async findAllUsers(@Query() query: ListAllUsersDto) {
+    return mapToUsersListResponse(await this.usersService.findAll(query));
   }
 
   @Roles(Role.Admin)
   @Get(':id')
   async findOneUser(@Param('id', ParseIntPipe) id: number) {
-    const userFound = this.usersService.findOne(id);
+    const userFound = await this.usersService.findOne(id);
     if (!userFound) throw new NotFoundException('User does not exist');
-    return userFound;
+    return mapToUserResponse(userFound);
   }
 
   @Roles(Role.Admin)
@@ -49,24 +48,24 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return await this.usersService.update(id, updateUserDto);
+    return mapToUserResponse(await this.usersService.update(id, updateUserDto));
   }
 
   @Roles(Role.Admin)
   @Delete(':id')
   async deleteUser(@Param('id', ParseIntPipe) id: number) {
-    return await this.usersService.remove(id);
+    return mapToUserResponse(await this.usersService.remove(id));
   }
 
   @Roles(Role.Admin)
   @Patch(':id/ban')
   async banUser(@Param('id', ParseIntPipe) id: number) {
-    return await this.usersService.banUser(id);
+    return mapToUserResponse(await this.usersService.banUser(id));
   }
 
   @Roles(Role.Admin)
   @Patch(':id/unban')
   async unBanUser(@Param('id', ParseIntPipe) id: number) {
-    return await this.usersService.unBanUser(id);
+    return mapToUserResponse(await this.usersService.unBanUser(id));
   }
 }

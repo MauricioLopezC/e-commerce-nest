@@ -6,3 +6,8 @@ export class CartResponseDto {
   updatedAt: Date;
   cartItems: CartItemResponseDto[];
 }
+
+export class CartWithMetadataResponse {
+  cart: CartResponseDto;
+  metadata: { cartTotal: number };
+}

@@ -2,6 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { CurrentUser } from '../common/current-user/current-user.decorator';
 import { JwtPayload } from '../common/types/JwtPayload';
+import { mapToCartWithMetadataResponse } from './mapper';
 
 @Controller('me/cart')
 export class CartController {
@@ -9,7 +10,9 @@ export class CartController {
 
   @Get()
   async findCart(@CurrentUser() user: JwtPayload) {
-    return await this.cartService.findOneByUserId(user.id);
+    return mapToCartWithMetadataResponse(
+      await this.cartService.findOneByUserId(user.id),
+    );
   }
 
   @Get('/total-discount')

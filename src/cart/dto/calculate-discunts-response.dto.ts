@@ -8,7 +8,7 @@ interface AppliedDiscount {
   appliedTimes: number;
 }
 
-export interface CalculateDiscountsResponse {
+export interface CalculateDiscountsResponseDto {
   discountAmount: Prisma.Decimal;
   finalTotal: Prisma.Decimal;
   appliedDiscounts: AppliedDiscount[];

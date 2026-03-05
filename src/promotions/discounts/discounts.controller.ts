@@ -16,6 +16,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UpdateDiscountDto } from './dto/update-discount.dto';
 import { PublicRoute } from 'src/auth/decorators/public-routes.decorator';
 import { ListAllDiscountsDto } from './dto/list-all-discounts.dto';
+import { mapToDiscountResponse, mapToDiscountsListResponse } from './mapper';
 
 @Controller('promotions/discounts')
 export class DiscountsController {
@@ -24,18 +25,22 @@ export class DiscountsController {
   @Roles(Role.Admin)
   @Post()
   async create(@Body() createDiscountDto: CreateDiscountDto) {
-    return await this.discountsService.create(createDiscountDto);
+    return mapToDiscountResponse(
+      await this.discountsService.create(createDiscountDto),
+    );
   }
 
   @PublicRoute()
   @Get()
   async findAll(@Query() query: ListAllDiscountsDto) {
-    return await this.discountsService.findAll(query);
+    return mapToDiscountsListResponse(
+      await this.discountsService.findAll(query),
+    );
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return await this.discountsService.findOne(id);
+    return mapToDiscountResponse(await this.discountsService.findOne(id));
   }
 
   @Roles(Role.Admin)
@@ -44,12 +49,14 @@ export class DiscountsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDiscountDto: UpdateDiscountDto,
   ) {
-    return await this.discountsService.update(id, updateDiscountDto);
+    return mapToDiscountResponse(
+      await this.discountsService.update(id, updateDiscountDto),
+    );
   }
 
   @Roles(Role.Admin)
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number) {
-    return await this.discountsService.delete(id);
+    return mapToDiscountResponse(await this.discountsService.delete(id));
   }
 }

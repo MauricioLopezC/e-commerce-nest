@@ -4,8 +4,8 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderStatus, User } from 'src/generated/prisma/client';
 import { ListAllUsersDto } from './dtos/list-all-users.dto';
-import { UsersListResponseDto } from './dtos/users-response.dto';
 import { UserSelect } from './user-constants';
+import { UsersListWithRelations, UserWithStats } from './mapper';
 
 @Injectable()
 export class UsersService {
@@ -14,7 +14,7 @@ export class UsersService {
   /**
    * create a user and cart for that user in a transaction;
    */
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto) {
     const createdUser = await this.prisma.user.create({
       data: {
         ...createUserDto,
@@ -22,12 +22,12 @@ export class UsersService {
           create: {},
         },
       },
+      select: UserSelect,
     });
-    //should return User without the password and many other sensitive data
     return createdUser;
   }
 
-  async findAll(query: ListAllUsersDto): Promise<UsersListResponseDto> {
+  async findAll(query: ListAllUsersDto): Promise<UsersListWithRelations> {
     const limit = query.limit;
     const page = query.page;
     const offset = (page - 1) * limit; //for pagination offset
@@ -80,20 +80,11 @@ export class UsersService {
       where: {
         id: id,
       },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-        //cart: true
-      },
+      select: UserSelect,
     });
   }
 
-  async findByEmail(email: string): Promise<User> {
+  async findByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: {
         email: email,
@@ -101,49 +92,50 @@ export class UsersService {
     });
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: number, updateUserDto: UpdateUserDto) {
     return this.prisma.user.update({
       where: {
         id: id,
       },
       data: updateUserDto,
+      select: UserSelect,
     });
   }
 
-  async remove(id: number): Promise<User> {
-    const deletedUser = await this.prisma.user.delete({
+  async remove(id: number) {
+    return this.prisma.user.delete({
       where: {
         id,
       },
+      select: UserSelect,
     });
-    return deletedUser;
   }
 
   /**
    * only admin
    * @param id id of user to ban
    */
-  async banUser(id: number): Promise<User> {
-    const bannedUser = await this.prisma.user.update({
+  async banUser(id: number) {
+    return this.prisma.user.update({
       where: { id },
       data: {
         isBanned: true,
       },
+      select: UserSelect,
     });
-    return bannedUser;
   }
 
   /**
    * only admin
    * @param id id of user to ban
    */
-  async unBanUser(id: number): Promise<User> {
-    const bannedUser = await this.prisma.user.update({
+  async unBanUser(id: number) {
+    return this.prisma.user.update({
       where: { id },
       data: {
         isBanned: false,
       },
+      select: UserSelect,
     });
-    return bannedUser;
   }
 }

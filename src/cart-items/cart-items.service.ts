@@ -15,10 +15,7 @@ import { prismaUniqueConstraintError } from 'src/common/prisma-erros';
 export class CartItemsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(
-    userId: number,
-    cartItemDto: CreateCartItemDto,
-  ): Promise<CartItem> {
+  async create(userId: number, cartItemDto: CreateCartItemDto) {
     const productSku = await this.prisma.productSku.findUnique({
       where: {
         id: cartItemDto.productSkuId,
@@ -43,6 +40,15 @@ export class CartItemsService {
           productSkuId: cartItemDto.productSkuId,
           quantity: cartItemDto.quantity,
         },
+        include: {
+          product: {
+            include: {
+              images: true,
+              categories: true,
+            },
+          },
+          productSku: true,
+        },
       });
     } catch (error) {
       if (
@@ -57,7 +63,7 @@ export class CartItemsService {
     }
   }
 
-  async findAllByUserId(userId: number): Promise<CartItem[]> {
+  async findAllByUserId(userId: number) {
     const cart = await this.prisma.cart.findUnique({ where: { userId } });
     const cartItems = await this.prisma.cartItem.findMany({
       where: {
@@ -67,6 +73,7 @@ export class CartItemsService {
         product: {
           include: {
             images: true,
+            categories: true,
           },
         },
         productSku: true,
@@ -78,12 +85,21 @@ export class CartItemsService {
     return cartItems;
   }
 
-  async findOneByUserId(userId: number, id: number): Promise<CartItem> {
+  async findOneByUserId(userId: number, id: number) {
     const cart = await this.prisma.cart.findUnique({ where: { userId } });
     const cartItem = await this.prisma.cartItem.findUnique({
       where: {
         id,
         cartId: cart.id,
+      },
+      include: {
+        product: {
+          include: {
+            images: true,
+            categories: true,
+          },
+        },
+        productSku: true,
       },
     });
 
@@ -95,7 +111,7 @@ export class CartItemsService {
     userId: number,
     id: number,
     updateCartItemDto: UpdateCartItemDto,
-  ): Promise<CartItem> {
+  ) {
     const cart = await this.prisma.cart.findUnique({ where: { userId } });
     if (updateCartItemDto.quantity) {
       const cartItem = await this.prisma.cartItem.findUnique({
@@ -129,15 +145,33 @@ export class CartItemsService {
         cartId: cart.id,
       },
       data: updateCartItemDto,
+      include: {
+        product: {
+          include: {
+            images: true,
+            categories: true,
+          },
+        },
+        productSku: true,
+      },
     });
   }
 
-  async remove(userId: number, id: number): Promise<CartItem> {
+  async remove(userId: number, id: number) {
     const cart = await this.prisma.cart.findUnique({ where: { userId } });
     const removedCartItem = await this.prisma.cartItem.delete({
       where: {
         id,
         cartId: cart.id,
+      },
+      include: {
+        product: {
+          include: {
+            images: true,
+            categories: true,
+          },
+        },
+        productSku: true,
       },
     });
     return removedCartItem;

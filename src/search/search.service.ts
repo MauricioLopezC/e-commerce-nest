@@ -12,6 +12,7 @@ export class SearchService {
     const page = searchDto.page;
     const offset = (page - 1) * limit; //for pagination offset
     const productName = searchDto.productName.toLowerCase();
+
     const products = await this.prisma.product.findMany({
       where: {
         name: {
@@ -20,11 +21,24 @@ export class SearchService {
       },
       include: {
         images: true,
+        categories: true,
       },
       skip: offset,
       take: limit,
     });
-    return products;
+
+    const count = await this.prisma.product.count({
+      where: {
+        name: {
+          contains: productName,
+        },
+      },
+    });
+
+    return {
+      products,
+      metadata: { _count: count },
+    };
   }
 
   /**

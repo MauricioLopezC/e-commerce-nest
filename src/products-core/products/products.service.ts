@@ -12,7 +12,7 @@ import { NotFoundError } from 'src/common/errors/business-error';
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createProductDto: CreateProductDto): Promise<Product> {
+  async create(createProductDto: CreateProductDto) {
     const categoriesIds = createProductDto.categories.map((categoryId) => ({
       id: categoryId,
     }));
@@ -25,6 +25,7 @@ export class ProductsService {
       data,
       include: {
         categories: true,
+        images: true,
       },
     });
     return newProduct;
@@ -77,7 +78,7 @@ export class ProductsService {
     };
   }
 
-  async findOne(id: number): Promise<Product> {
+  async findOne(id: number) {
     const product = await this.prisma.product.findUnique({
       where: {
         id,
@@ -93,23 +94,25 @@ export class ProductsService {
     return product;
   }
 
-  async update(
-    id: number,
-    updateProductDto: UpdateProductDto,
-  ): Promise<Product> {
+  async update(id: number, updateProductDto: UpdateProductDto) {
     return await this.prisma.product.update({
       where: {
         id,
       },
       data: updateProductDto,
+      include: {
+        images: true,
+        categories: true,
+      },
     });
   }
 
-  async remove(id: number): Promise<Product> {
+  async remove(id: number) {
     return await this.prisma.product.delete({
       where: {
         id,
       },
+      include: { images: true, categories: true },
     });
   }
 
@@ -129,6 +132,7 @@ export class ProductsService {
       },
       include: {
         categories: true,
+        images: true,
       },
     });
   }
@@ -149,6 +153,7 @@ export class ProductsService {
       },
       include: {
         categories: true,
+        images: true,
       },
     });
   }
@@ -169,6 +174,7 @@ export class ProductsService {
       },
       include: {
         categories: true,
+        images: true,
       },
     });
   }

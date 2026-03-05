@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Favorite, Prisma } from 'src/generated/prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
 import {
   NotFoundError,
   UniqueConstraintError,
 } from 'src/common/errors/business-error';
 import { prismaUniqueConstraintError } from 'src/common/prisma-erros';
+import { FavoritesListWithRelations } from './mapper';
 
 @Injectable()
 export class FavoritesService {
@@ -18,6 +19,14 @@ export class FavoritesService {
     try {
       return await this.prisma.favorite.create({
         data: { userId: userId, productId: createFavoriteDto.productId },
+        include: {
+          product: {
+            include: {
+              images: true,
+              categories: true,
+            },
+          },
+        },
       });
     } catch (error) {
       if (
@@ -30,7 +39,10 @@ export class FavoritesService {
     }
   }
 
-  async findAllByUserId(userId: number, query: ListAllFavoritesDto) {
+  async findAllByUserId(
+    userId: number,
+    query: ListAllFavoritesDto,
+  ): Promise<FavoritesListWithRelations> {
     const limit = query.limit;
     const page = query.page;
     const offset = (page - 1) * limit; //for pagination offset
@@ -47,6 +59,7 @@ export class FavoritesService {
         product: {
           include: {
             images: true,
+            categories: true,
           },
         },
       },
@@ -62,11 +75,19 @@ export class FavoritesService {
     };
   }
 
-  async findOneByUserId(userId: number, favoriteId: number): Promise<Favorite> {
+  async findOneByUserId(userId: number, favoriteId: number) {
     const favorite = await this.prisma.favorite.findUnique({
       where: {
         userId: userId,
         id: favoriteId,
+      },
+      include: {
+        product: {
+          include: {
+            images: true,
+            categories: true,
+          },
+        },
       },
     });
 
@@ -89,6 +110,14 @@ export class FavoritesService {
         },
       },
       data: updateFavoriteDto,
+      include: {
+        product: {
+          include: {
+            images: true,
+            categories: true,
+          },
+        },
+      },
     });
   }
 
@@ -97,6 +126,14 @@ export class FavoritesService {
       where: {
         id,
         userId,
+      },
+      include: {
+        product: {
+          include: {
+            images: true,
+            categories: true,
+          },
+        },
       },
     });
   }

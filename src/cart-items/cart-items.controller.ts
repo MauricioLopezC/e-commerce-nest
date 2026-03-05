@@ -18,6 +18,7 @@ import { StockError } from './errors/stock-error';
 import { CurrentUser } from '../common/current-user/current-user.decorator';
 import { JwtPayload } from '../common/types/JwtPayload';
 import { NotFoundError } from 'src/common/errors/business-error';
+import { mapToCartItemResponse } from './mapper';
 
 @Controller('me/cart-items')
 export class CartItemsController {
@@ -28,12 +29,15 @@ export class CartItemsController {
     @CurrentUser() user: JwtPayload,
     @Body() createCartItemDto: CreateCartItemDto,
   ) {
-    return await this.cartItemsService.create(user.id, createCartItemDto);
+    return mapToCartItemResponse(
+      await this.cartItemsService.create(user.id, createCartItemDto),
+    );
   }
 
   @Get()
   async findAll(@CurrentUser() user: JwtPayload) {
-    return await this.cartItemsService.findAllByUserId(user.id);
+    const cartItems = await this.cartItemsService.findAllByUserId(user.id);
+    return cartItems.map((item) => mapToCartItemResponse(item));
   }
 
   @Get(':id')
@@ -41,7 +45,9 @@ export class CartItemsController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: JwtPayload,
   ) {
-    return await this.cartItemsService.findOneByUserId(user.id, id);
+    return mapToCartItemResponse(
+      await this.cartItemsService.findOneByUserId(user.id, id),
+    );
   }
 
   @Patch(':id')
@@ -51,13 +57,14 @@ export class CartItemsController {
     @Body() updateCartItemDto: UpdateCartItemDto,
   ) {
     try {
-      return await this.cartItemsService.updateByUserId(
-        user.id,
-        id,
-        updateCartItemDto,
+      return mapToCartItemResponse(
+        await this.cartItemsService.updateByUserId(
+          user.id,
+          id,
+          updateCartItemDto,
+        ),
       );
     } catch (error) {
-      //many errors types could be here
       if (error instanceof NotFoundError)
         throw new NotFoundException(error.message);
       if (error instanceof StockError)
@@ -71,6 +78,8 @@ export class CartItemsController {
     @CurrentUser() user: JwtPayload,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return await this.cartItemsService.remove(user.id, id);
+    return mapToCartItemResponse(
+      await this.cartItemsService.remove(user.id, id),
+    );
   }
 }

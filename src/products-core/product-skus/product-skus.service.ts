@@ -20,10 +20,7 @@ export class ProductSkusService {
   //TODO: Add array image attribute in UpdateProductSkusDto
   constructor(private prisma: PrismaService) {}
 
-  async create(
-    productId: number,
-    createProductSkusDto: CreateProductSkusDto,
-  ): Promise<ProductSku> {
+  async create(productId: number, createProductSkusDto: CreateProductSkusDto) {
     try {
       return await this.prisma.productSku.create({
         data: {
@@ -31,6 +28,9 @@ export class ProductSkusService {
           size: createProductSkusDto.size,
           color: createProductSkusDto.color,
           quantity: createProductSkusDto.quantity,
+        },
+        include: {
+          images: true,
         },
       });
     } catch (error) {
@@ -52,7 +52,7 @@ export class ProductSkusService {
     }
   }
 
-  async findAll(productId: number): Promise<ProductSku[]> {
+  async findAll(productId: number) {
     const skus = await this.prisma.productSku.findMany({
       where: {
         productId,
@@ -64,7 +64,7 @@ export class ProductSkusService {
     return skus;
   }
 
-  async findOne(productId: number, id: number): Promise<ProductSku> {
+  async findOne(productId: number, id: number) {
     const sku = await this.prisma.productSku.findUnique({
       where: {
         id,
@@ -84,22 +84,28 @@ export class ProductSkusService {
     productId: number,
     id: number,
     updateProductSkusDto: UpdateProductSkusDto,
-  ): Promise<ProductSku> {
+  ) {
     const updatedSku = await this.prisma.productSku.update({
       where: {
         id,
         productId,
       },
       data: updateProductSkusDto,
+      include: {
+        images: true,
+      },
     });
     return updatedSku;
   }
 
-  async remove(productId: number, id: number): Promise<ProductSku> {
+  async remove(productId: number, id: number) {
     const deletedSku = await this.prisma.productSku.delete({
       where: {
         id,
         productId,
+      },
+      include: {
+        images: true,
       },
     });
     return deletedSku;

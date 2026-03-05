@@ -13,6 +13,7 @@ import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
+import { mapToFavoriteResponse, mapToFavoritesListResponse } from './mapper';
 
 @Roles(Role.Admin)
 @Controller('users/:userId/favorites')
@@ -20,11 +21,13 @@ export class UsersFavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 
   @Get()
-  findAll(
+  async findAll(
     @Param('userId', ParseIntPipe) userId: number,
     @Query() query: ListAllFavoritesDto,
   ) {
-    return this.favoritesService.findAllByUserId(userId, query);
+    return mapToFavoritesListResponse(
+      await this.favoritesService.findAllByUserId(userId, query),
+    );
   }
 
   @Get(':id')
@@ -32,7 +35,9 @@ export class UsersFavoritesController {
     @Param('userId', ParseIntPipe) userId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.favoritesService.findOneByUserId(userId, id);
+    return mapToFavoriteResponse(
+      await this.favoritesService.findOneByUserId(userId, id),
+    );
   }
 
   @Patch(':id')
@@ -41,7 +46,9 @@ export class UsersFavoritesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateFavoriteDto: UpdateFavoriteDto,
   ) {
-    return await this.favoritesService.update(userId, id, updateFavoriteDto);
+    return mapToFavoriteResponse(
+      await this.favoritesService.update(userId, id, updateFavoriteDto),
+    );
   }
 
   @Delete(':id')
@@ -49,6 +56,8 @@ export class UsersFavoritesController {
     @Param('userId', ParseIntPipe) userId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return await this.favoritesService.removeByUserId(userId, id);
+    return mapToFavoriteResponse(
+      await this.favoritesService.removeByUserId(userId, id),
+    );
   }
 }

@@ -12,6 +12,7 @@ import { Role } from '../../auth/enums/role.enum';
 import { OrdersService } from '../orders.service';
 import { ListAllOrdersDto } from '../dto/list-all-orders.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
+import { mapToOrderListResponse, mapToOrderResponse } from '../mapper';
 
 @Roles(Role.Admin)
 @Controller('orders')
@@ -20,12 +21,12 @@ export class AdminOrdersController {
 
   @Get()
   async findAll(@Query() query: ListAllOrdersDto) {
-    return await this.ordersService.findAll(query);
+    return mapToOrderListResponse(await this.ordersService.findAll(query));
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return await this.ordersService.findOne(id);
+    return mapToOrderResponse(await this.ordersService.findOne(id));
   }
 
   @Patch(':id')
@@ -33,6 +34,8 @@ export class AdminOrdersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateOrderDto: UpdateOrderDto,
   ) {
-    return await this.ordersService.update(id, updateOrderDto);
+    return mapToOrderResponse(
+      await this.ordersService.update(id, updateOrderDto),
+    );
   }
 }

@@ -1,3 +1,3 @@
 import { User } from 'src/generated/prisma/client';
 
-export type UserResponse = Omit<User, 'password' | 'role'>;
+export type RegisterResponse = Omit<User, 'password' | 'role'>;

@@ -3,7 +3,7 @@ import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UniqueConstraintError } from 'src/common/errors/business-error';
-import { UserResponse } from '../dto/register-response.dto';
+import { RegisterResponse } from '../dto/register-response.dto';
 import { Prisma } from 'src/generated/prisma/client';
 import { prismaUniqueConstraintError } from 'src/common/prisma-erros';
 
@@ -11,12 +11,12 @@ import { prismaUniqueConstraintError } from 'src/common/prisma-erros';
 export class RegisterService {
   constructor(private readonly usersService: UsersService) {}
 
-  async register(createUserDto: CreateUserDto): Promise<UserResponse> {
+  async register(createUserDto: CreateUserDto): Promise<RegisterResponse> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     createUserDto.password = hashedPassword;
     try {
       const createdUser = await this.usersService.create(createUserDto);
-      const { password, role, ...userResponse } = createdUser;
+      const { role, ...userResponse } = createdUser;
       return userResponse;
     } catch (error) {
       if (

@@ -20,3 +20,8 @@ export class DiscountResponseDto {
   products: ProductResponseDto[];
   categories: CategoryResponseDto[];
 }
+
+export class DiscountsListResponseDto {
+  discounts: DiscountResponseDto[];
+  metadata: { _count: number };
+}

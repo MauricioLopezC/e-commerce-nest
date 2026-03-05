@@ -3,7 +3,7 @@ import { ProductResponseDto } from 'src/products-core/products/dto/products-resp
 import { DiscountResponseDto } from 'src/promotions/discounts/dto/discounts-response.dto';
 import { UserResponseDto } from 'src/users/dtos/users-response.dto';
 
-export class Order {
+export class OrderResponseDto {
   id: number;
   userId: number;
   status: string;
@@ -13,9 +13,9 @@ export class Order {
   createdAt: Date;
   updatedAt: Date;
 
-  orderItems?: OrderItem[];
-  payment?: Payment;
-  shipping?: Shipping;
+  orderItems?: OrderItemResponseDto[];
+  payment?: PaymentResponseDto;
+  shipping?: ShippingResponseDto;
   user?: UserResponseDto;
   discounts?: DiscountsData[];
 }
@@ -29,7 +29,7 @@ class DiscountsData {
   discount: DiscountResponseDto;
 }
 
-export class OrderItem {
+export class OrderItemResponseDto {
   id: number;
   orderId: number;
   productId: number;
@@ -42,7 +42,7 @@ export class OrderItem {
   productSku?: ProductSkuResponseDto;
 }
 
-export class Payment {
+export class PaymentResponseDto {
   id: number;
   orderId: number;
   provider: string;
@@ -50,7 +50,7 @@ export class Payment {
   updatedAt: Date;
 }
 
-export class Shipping {
+export class ShippingResponseDto {
   id: number;
   orderId: number;
   country: string;
@@ -59,4 +59,9 @@ export class Shipping {
   address: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export class OrderListResponse {
+  orders: OrderResponseDto[];
+  metadata: { _count: number; _sum?: { total: number; finalTotal: number } };
 }
