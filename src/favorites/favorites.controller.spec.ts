@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersFavoritesController } from './favorites.controler';
+import { FavoritesController } from './favorites.controller';
 import { FavoritesService } from './favorites.service';
 
 describe('FavoritesController', () => {
-  let controller: UsersFavoritesController;
+  let controller: FavoritesController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UsersFavoritesController],
+      controllers: [FavoritesController],
       providers: [
         {
           provide: FavoritesService,
@@ -19,7 +19,7 @@ describe('FavoritesController', () => {
       ],
     }).compile();
 
-    controller = module.get<UsersFavoritesController>(UsersFavoritesController);
+    controller = module.get<FavoritesController>(FavoritesController);
   });
 
   it('should be defined', () => {

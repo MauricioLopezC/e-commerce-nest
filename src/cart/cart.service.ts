@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Discount, Prisma } from 'src/generated/prisma/client';
 import { DiscountsService } from '../promotions/discounts/discounts.service';
-import { CalculateDiscountsResponseDto } from './dto/calculate-discunts-response.dto';
+import { CalculateDiscountsType } from './types';
 
 @Injectable()
 export class CartService {
@@ -78,7 +78,7 @@ export class CartService {
     return total;
   }
 
-  async checkDiscounts(userId: number): Promise<CalculateDiscountsResponseDto> {
+  async checkDiscounts(userId: number): Promise<CalculateDiscountsType> {
     const cart = await this.prisma.cart.findUnique({ where: { id: userId } });
     const total = await this.calculateCartTotal(userId);
 

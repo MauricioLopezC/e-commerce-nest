@@ -33,6 +33,8 @@ export class PrismaExceptionFilter implements ExceptionFilter {
       );
     }
 
+    //TODO: add foreign key error and delete try catchs in product-skus
+
     this.logger.error(`Unhandled Prisma error (${error.code})`, error.stack);
 
     throw new InternalServerErrorException();

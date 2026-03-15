@@ -11,11 +11,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { UpdateUserDto } from './dtos/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
-import { ListAllUsersDto } from './dtos/list-all-users.dto';
+import { ListAllUsersDto } from './dto/list-all-users.dto';
 import { mapToUserResponse, mapToUsersListResponse } from './mapper';
 
 @Controller('users')

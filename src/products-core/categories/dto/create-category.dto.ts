@@ -5,7 +5,7 @@ export class CreateCategoryDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(30)
-  @Transform(({ value }) => value.toLowerCase())
+  @Transform(({ value }) => (value as string).trim().toLowerCase())
   name: string;
 
   @IsString()

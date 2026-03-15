@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { UpdateUserDto } from './dtos/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderStatus, User } from 'src/generated/prisma/client';
-import { ListAllUsersDto } from './dtos/list-all-users.dto';
+import { ListAllUsersDto } from './dto/list-all-users.dto';
 import { UserSelect } from './user-constants';
 import { UsersListWithRelations, UserWithStats } from './mapper';
 

@@ -1,6 +1,6 @@
 import { ProductResponseDto } from 'src/products-core/products/dto/products-response.dto';
 
-export interface FavoriteResponseDto {
+export class FavoriteResponseDto {
   id: number;
   productId: number;
   userId: number;
@@ -11,5 +11,9 @@ export interface FavoriteResponseDto {
 
 export class FavoritesListResponseDto {
   favorites: FavoriteResponseDto[];
-  metadata: { _count: number };
+  metadata: Metadata;
+}
+
+export class Metadata {
+  _count: number;
 }

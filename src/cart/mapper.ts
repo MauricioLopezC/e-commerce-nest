@@ -1,9 +1,11 @@
 import { Prisma } from 'src/generated/prisma/client';
 import {
+  CalculateDiscountsResponseDto,
   CartResponseDto,
   CartWithMetadataResponse,
 } from './dto/cart-response.dto';
 import { mapToCartItemResponse } from 'src/cart-items/mapper';
+import { CalculateDiscountsType } from './types';
 
 type CartWithRelations = Prisma.CartGetPayload<{
   include: {
@@ -43,5 +45,21 @@ export function mapToCartWithMetadataResponse(
     metadata: {
       cartTotal: data.metadata.cartTotal.toNumber(),
     },
+  };
+}
+
+export function mapToCalculateDiscountsResponse(
+  data: CalculateDiscountsType,
+): CalculateDiscountsResponseDto {
+  return {
+    discountAmount: data.discountAmount.toNumber(),
+    finalTotal: data.finalTotal.toNumber(),
+    appliedDiscounts: data.appliedDiscounts.map((d) => ({
+      discountId: d.discountId,
+      discountName: d.discountName,
+      discountValue: d.discountValue,
+      discountAmount: d.discountAmount.toNumber(),
+      appliedTimes: d.appliedTimes,
+    })),
   };
 }

@@ -14,6 +14,7 @@ import {
 } from 'src/common/errors/business-error';
 import { ApplicableTo, DiscountType } from './enums/enums';
 import { UpdateDiscountDto } from './dto/update-discount.dto';
+import { parseOrderBy } from 'src/common/orderByParser';
 
 @Injectable()
 export class DiscountsService {
@@ -60,14 +61,24 @@ export class DiscountsService {
       }
     }
 
-    //TODO: apply orderBy filter
-    delete query.limit;
-    delete query.page;
-    delete query.orderBy;
+    let filters: Prisma.DiscountWhereInput = {};
+    if (query.isActive !== undefined) {
+      filters.isActive = query.isActive;
+    }
+    if (query.discountType !== undefined) {
+      filters.discountType = query.discountType;
+    }
+    if (query.applicableTo !== undefined) {
+      filters.applicableTo = query.applicableTo;
+    }
+
+    const orderBy = parseOrderBy(query.orderBy);
+
     const finalDiscounts = await this.prisma.discount.findMany({
       skip: offset,
       take: limit,
-      where: query,
+      where: filters,
+      orderBy,
       include: {
         categories: true,
         products: { include: { images: true, categories: true } },
@@ -75,7 +86,7 @@ export class DiscountsService {
     });
 
     const aggregate = await this.prisma.discount.aggregate({
-      where: query,
+      where: filters,
       _count: true,
     });
 
@@ -107,7 +118,7 @@ export class DiscountsService {
       connectedProducts = products.map((productId) => ({ id: productId }));
     }
     if (body.applicableTo === ApplicableTo.CATEGORY) {
-      if (categories || categories?.length === 0) {
+      if (!categories || categories?.length === 0) {
         throw new ValidationError('CategoryIds list is required');
       }
       connectedCategories = categories.map((categoryId) => ({

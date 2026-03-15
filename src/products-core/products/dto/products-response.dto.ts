@@ -1,7 +1,7 @@
 import { CategoryResponseDto } from 'src/products-core/categories/dto/categories-response.dto';
 import { Sex } from '../enums/sex.enum';
 import { ProductSkuResponseDto } from 'src/products-core/product-skus/dto/product-skus-response.dto';
-import { Image } from 'src/products-core/images/types';
+import { Image } from 'src/products-core/images/dto/images-response.dto';
 
 export class ProductResponseDto {
   id: number;

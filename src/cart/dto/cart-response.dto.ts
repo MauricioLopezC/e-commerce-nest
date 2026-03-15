@@ -11,3 +11,17 @@ export class CartWithMetadataResponse {
   cart: CartResponseDto;
   metadata: { cartTotal: number };
 }
+
+export class CalculateDiscountsResponseDto {
+  discountAmount: number;
+  finalTotal: number;
+  appliedDiscounts: AppliedDiscountResponseDto[];
+}
+
+class AppliedDiscountResponseDto {
+  discountId: number;
+  discountName: string;
+  discountValue: number;
+  discountAmount: number;
+  appliedTimes: number;
+}

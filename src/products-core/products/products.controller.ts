@@ -17,19 +17,13 @@ import { ListAllProductDto } from './dto/list-all-products.dto';
 import { PublicRoute } from 'src/auth/decorators/public-routes.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
-import { Sex } from './enums/sex.enum';
 import { ConnectCategoriesDto } from './dto/connect-categories.dto';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import {
   ProductListResponse,
   ProductResponseDto,
 } from './dto/products-response.dto';
-import { Prisma } from 'src/generated/prisma/client';
-import {
-  mapToProductListResponse,
-  mapToProductResponseDto,
-  ProductListWithRelations,
-} from './mapper';
+import { mapToProductListResponse, mapToProductResponseDto } from './mapper';
 
 @Controller('products')
 export class ProductsController {
@@ -46,12 +40,8 @@ export class ProductsController {
   @ApiOkResponse({ type: ProductListResponse })
   @PublicRoute()
   @Get()
-  findAll(@Query() query: ListAllProductDto) {
-    return mapToProductListResponse(
-      this.productsService.findAll(
-        query,
-      ) as unknown as ProductListWithRelations,
-    );
+  async findAll(@Query() query: ListAllProductDto) {
+    return mapToProductListResponse(await this.productsService.findAll(query));
   }
 
   @ApiOkResponse({ type: ProductResponseDto })

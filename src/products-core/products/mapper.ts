@@ -36,7 +36,7 @@ export function mapToProductListResponse(
   data: ProductListWithRelations,
 ): ProductListResponse {
   return {
-    products: data.products.map((p) => this.mapToProductResponseDto(p)),
+    products: data.products.map((p) => mapToProductResponseDto(p)),
     metadata: data.metadata,
   };
 }

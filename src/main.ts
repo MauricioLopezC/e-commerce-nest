@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import { PrismaExceptionFilter } from './common/filters/prisma-client-exception/prisma-client-exception.filter';
 import { BusinessExceptionFilter } from './common/filters/business-exception/business-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ErrorResponseDto } from './common/dto/error-response.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +26,16 @@ async function bootstrap() {
     .setTitle('E-commerce api')
     .setDescription('Api of the Martina clothing store')
     .setVersion('1.0')
+    .addGlobalResponse({
+      status: 500,
+      description: 'Internal server error',
+      type: ErrorResponseDto,
+    })
+    .addGlobalResponse({
+      status: '4XX',
+      description: 'Default error response',
+      type: ErrorResponseDto,
+    })
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);

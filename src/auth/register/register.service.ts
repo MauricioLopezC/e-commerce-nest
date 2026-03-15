@@ -1,23 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
-import { CreateUserDto } from 'src/users/dtos/create-user.dto';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UniqueConstraintError } from 'src/common/errors/business-error';
-import { RegisterResponse } from '../dto/register-response.dto';
 import { Prisma } from 'src/generated/prisma/client';
 import { prismaUniqueConstraintError } from 'src/common/prisma-erros';
+import { UserWithStats } from 'src/users/mapper';
 
 @Injectable()
 export class RegisterService {
   constructor(private readonly usersService: UsersService) {}
 
-  async register(createUserDto: CreateUserDto): Promise<RegisterResponse> {
+  async register(createUserDto: CreateUserDto): Promise<UserWithStats> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     createUserDto.password = hashedPassword;
     try {
       const createdUser = await this.usersService.create(createUserDto);
-      const { role, ...userResponse } = createdUser;
-      return userResponse;
+      return createdUser;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&

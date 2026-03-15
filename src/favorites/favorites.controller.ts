@@ -14,12 +14,15 @@ import { ListAllFavoritesDto } from './dto/list-all-favorites.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { mapToFavoriteResponse, mapToFavoritesListResponse } from './mapper';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { FavoritesListResponseDto } from './dto/favorites-response.dto';
 
 @Roles(Role.Admin)
 @Controller('users/:userId/favorites')
-export class UsersFavoritesController {
+export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 
+  @ApiOkResponse({ type: FavoritesListResponseDto })
   @Get()
   async findAll(
     @Param('userId', ParseIntPipe) userId: number,

@@ -18,6 +18,20 @@ type OrderWithRelations = Prisma.OrderGetPayload<{
     payment: true;
     shipping: true;
     discounts: { include: { discount: true } };
+    user: {
+      select: {
+        id: true;
+        firstName: true;
+        lastName: true;
+        email: true;
+        verifiedEmail: true;
+        role: true;
+        isBanned: true;
+        profileImage: true;
+        createdAt: true;
+        updatedAt: true;
+      };
+    };
   };
 }>;
 
@@ -30,7 +44,7 @@ type OrderItemWithRelations = Prisma.OrderItemGetPayload<{
 
 export type OrderListWithRelations = {
   orders: OrderWithRelations[];
-  metadata: { _count: number; _sum?: { total: Decimal } };
+  metadata: { _count: number; _sum: { total: Decimal; finalTotal: Decimal } };
 };
 
 export function mapToPaymentResponse(payment: Payment) {
@@ -76,7 +90,9 @@ export function mapToDiscountDataResponse(discountData: any): any {
   };
 }
 
-export function mapToOrderItemResponse(orderItem: any): OrderItemResponseDto {
+export function mapToOrderItemResponse(
+  orderItem: OrderItemWithRelations,
+): OrderItemResponseDto {
   return {
     id: orderItem.id,
     orderId: orderItem.orderId,
@@ -103,7 +119,9 @@ export function mapToOrderItemResponse(orderItem: any): OrderItemResponseDto {
   };
 }
 
-export function mapToOrderResponse(order: any): OrderResponseDto {
+export function mapToOrderResponse(
+  order: OrderWithRelations,
+): OrderResponseDto {
   return {
     id: order.id,
     userId: order.userId,
@@ -113,30 +131,28 @@ export function mapToOrderResponse(order: any): OrderResponseDto {
     finalTotal: order.finalTotal.toNumber(),
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
-    orderItems: order.orderItems.map((item: any) =>
-      mapToOrderItemResponse(item),
-    ),
+    orderItems: order.orderItems.map((item) => mapToOrderItemResponse(item)),
     payment: order.payment ? mapToPaymentResponse(order.payment) : undefined,
     shipping: order.shipping
       ? mapToShippingResponse(order.shipping)
       : undefined,
-    user: undefined,
+    user: order.user,
     discounts:
       order.discounts?.map((d: any) => mapToDiscountDataResponse(d)) || [],
   };
 }
 
-export function mapToOrderListResponse(data: any): OrderListResponse {
+export function mapToOrderListResponse(
+  data: OrderListWithRelations,
+): OrderListResponse {
   return {
-    orders: data.orders.map((order: any) => mapToOrderResponse(order)),
+    orders: data.orders.map((order) => mapToOrderResponse(order)),
     metadata: {
       _count: data.metadata._count,
-      _sum: data.metadata._sum
-        ? {
-            total: data.metadata._sum.total.toNumber(),
-            finalTotal: 0,
-          }
-        : undefined,
+      _sum: {
+        total: data.metadata._sum.total.toNumber(),
+        finalTotal: data.metadata._sum.finalTotal.toNumber(),
+      },
     },
   };
 }

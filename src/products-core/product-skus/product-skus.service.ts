@@ -5,7 +5,7 @@ import {
 } from './dto/create-product-skus.dto';
 import { UpdateProductSkusDto } from './dto/update-product-skus.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma, ProductSku } from 'src/generated/prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import {
   NotFoundError,
   UniqueConstraintError,

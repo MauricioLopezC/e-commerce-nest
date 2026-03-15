@@ -20,7 +20,7 @@ import { Role } from 'src/auth/enums/role.enum';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import {
   ProductSkuResponseDto,
-  ProductSkuBatchUpdateResponse,
+  ProductSkuBatchUpdateResponseDto,
 } from './dto/product-skus-response.dto';
 import { mapToProductSkuResponseDto } from './mapper';
 
@@ -85,7 +85,7 @@ export class ProductSkusController {
     );
   }
 
-  @ApiOkResponse({ type: ProductSkuBatchUpdateResponse })
+  @ApiCreatedResponse({ type: ProductSkuBatchUpdateResponseDto })
   @Roles(Role.Admin)
   @Post('batch')
   async batchCreate(

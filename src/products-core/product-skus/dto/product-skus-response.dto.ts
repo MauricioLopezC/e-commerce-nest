@@ -1,4 +1,4 @@
-import { Image } from 'src/products-core/images/types';
+import { Image } from 'src/products-core/images/dto/images-response.dto';
 
 export class ProductSkuResponseDto {
   id: number;
@@ -11,6 +11,6 @@ export class ProductSkuResponseDto {
   images?: Image[];
 }
 
-export class ProductSkuBatchUpdateResponse {
+export class ProductSkuBatchUpdateResponseDto {
   count: number;
 }

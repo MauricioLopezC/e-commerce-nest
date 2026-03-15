@@ -1,4 +1,3 @@
-import { DiscountType } from 'src/generated/prisma/client';
 import { Transform } from 'class-transformer';
 import {
   IsArray,
@@ -14,7 +13,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { ApplicableTo } from '../enums/enums';
+import { ApplicableTo, DiscountType } from '../enums/enums';
 
 @ValidatorConstraint({ name: 'isValidOrderBy', async: false })
 class IsValidOrderByConstraint implements ValidatorConstraintInterface {
@@ -53,7 +52,7 @@ export class ListAllDiscountsDto {
 
   //filters seccion
   @IsOptional()
-  @Transform(({ value }) => value === 'true') //el atributo viene como un string y lo pasamos a number
+  @Transform(({ value }) => value === 'true')
   @IsBoolean()
   isActive?: boolean;
 

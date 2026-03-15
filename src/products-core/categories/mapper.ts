@@ -3,7 +3,9 @@ import { CategoryResponseDto } from './dto/categories-response.dto';
 
 type CategoryModel = Prisma.CategoryGetPayload<{}>;
 
-export function mapToCategoryResponseDto(category: any): CategoryResponseDto {
+export function mapToCategoryResponseDto(
+  category: CategoryModel,
+): CategoryResponseDto {
   return {
     id: category.id,
     name: category.name,

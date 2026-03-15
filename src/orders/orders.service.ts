@@ -111,6 +111,9 @@ export class OrdersService {
               productSku: true,
             },
           },
+          user: {
+            select: UserSelect,
+          },
           payment: true,
           shipping: true,
           discounts: { include: { discount: true } },
@@ -223,7 +226,12 @@ export class OrdersService {
       include: {
         orderItems: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: true,
+                categories: true,
+              },
+            },
             productSku: true,
           },
         },
@@ -250,7 +258,12 @@ export class OrdersService {
       include: {
         orderItems: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: true,
+                categories: true,
+              },
+            },
             productSku: true,
           },
         },
@@ -272,7 +285,12 @@ export class OrdersService {
       include: {
         orderItems: {
           include: {
-            product: true,
+            product: {
+              include: {
+                categories: true,
+                images: true,
+              },
+            },
             productSku: true,
           },
         },
@@ -288,7 +306,7 @@ export class OrdersService {
     });
   }
 
-  async findAllByUserId(userId: number): Promise<OrderListWithRelations> {
+  async findAllByUserId(userId: number) {
     const orders = await this.prisma.order.findMany({
       where: {
         userId,
@@ -302,6 +320,9 @@ export class OrdersService {
             productSku: true,
           },
         },
+        user: {
+          select: UserSelect,
+        },
         payment: true,
         shipping: true,
         discounts: { include: { discount: true } },
@@ -313,6 +334,7 @@ export class OrdersService {
       },
       _sum: {
         total: true,
+        finalTotal: true,
       },
       _count: true,
     });
@@ -337,6 +359,9 @@ export class OrdersService {
             product: { include: { images: true, categories: true } },
             productSku: true,
           },
+        },
+        user: {
+          select: UserSelect,
         },
         payment: true,
         shipping: true,

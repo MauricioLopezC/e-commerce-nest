@@ -2,10 +2,10 @@ import { Prisma } from 'src/generated/prisma/client';
 import {
   UserResponseDto,
   UsersListResponseDto,
-} from './dtos/users-response.dto';
+} from './dto/users-response.dto';
 import { UserSelect } from './user-constants';
 
-type UserWithSelect = Prisma.UserGetPayload<{
+export type UserWithSelect = Prisma.UserGetPayload<{
   select: typeof UserSelect;
 }>;
 

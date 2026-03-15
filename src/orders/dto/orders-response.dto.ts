@@ -1,7 +1,7 @@
 import { ProductSkuResponseDto } from 'src/products-core/product-skus/dto/product-skus-response.dto';
 import { ProductResponseDto } from 'src/products-core/products/dto/products-response.dto';
 import { DiscountResponseDto } from 'src/promotions/discounts/dto/discounts-response.dto';
-import { UserResponseDto } from 'src/users/dtos/users-response.dto';
+import { UserResponseDto } from 'src/users/dto/users-response.dto';
 
 export class OrderResponseDto {
   id: number;
@@ -63,5 +63,5 @@ export class ShippingResponseDto {
 
 export class OrderListResponse {
   orders: OrderResponseDto[];
-  metadata: { _count: number; _sum?: { total: number; finalTotal: number } };
+  metadata: { _count: number; _sum: { total: number; finalTotal: number } };
 }

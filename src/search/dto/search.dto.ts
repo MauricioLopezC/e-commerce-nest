@@ -22,7 +22,7 @@ export class SearchDto {
   @Max(20)
   @IsNotEmpty()
   @Transform(({ value }) => Number(value)) //el atributo viene como un string y lo pasamos a number
-  limit: number = 10;
+  limit?: number = 10;
 
   @IsOptional()
   @IsInt()
@@ -30,5 +30,5 @@ export class SearchDto {
   @Max(100)
   @IsNotEmpty()
   @Transform(({ value }) => Number(value))
-  page: number = 1;
+  page?: number = 1;
 }
