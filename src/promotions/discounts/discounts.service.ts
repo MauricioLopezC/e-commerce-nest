@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from 'src/generated/prisma/client';
+
+type PrismaTx = Prisma.TransactionClient;
 import {
   AppliedDiscount,
   CartItemsWithProductAndCategories,
   DiscountWithProductsAndCategories,
 } from './types/discount-types';
 import { CreateDiscountDto } from './dto/create-discount.dto';
-import { Prisma } from 'src/generated/prisma/client';
 import { ListAllDiscountsDto } from './dto/list-all-discounts.dto';
 import {
   NotFoundError,
@@ -267,9 +269,12 @@ export class DiscountsService {
     cartId: number,
     total: Prisma.Decimal,
     isApplying: boolean,
+    tx?: PrismaTx,
   ) {
+    const db = tx || this.prisma;
+
     const now = new Date();
-    const discounts = await this.prisma.discount.findMany({
+    const discounts = await db.discount.findMany({
       where: {
         isActive: true,
         endDate: { gt: now },
@@ -288,7 +293,7 @@ export class DiscountsService {
       };
     }
 
-    const cartItems = await this.prisma.cartItem.findMany({
+    const cartItems = await db.cartItem.findMany({
       where: {
         cartId,
       },
@@ -306,7 +311,7 @@ export class DiscountsService {
 
     if (isApplying) {
       for (const discountId of discountsToIncrement) {
-        await this.incrementUsage(discountId);
+        await this.incrementUsage(discountId, tx);
       }
     }
 
@@ -414,8 +419,9 @@ export class DiscountsService {
     }
   }
 
-  private async incrementUsage(discountId: number) {
-    await this.prisma.discount.update({
+  private async incrementUsage(discountId: number, tx?: PrismaTx) {
+    const db = tx || this.prisma;
+    await db.discount.update({
       where: {
         id: discountId,
       },
