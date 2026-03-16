@@ -49,6 +49,6 @@ async function bootstrap() {
   });
   //without this configuration for origin and credentials,
   //the browser doesn't allow set cookie
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
