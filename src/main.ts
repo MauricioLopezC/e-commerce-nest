@@ -44,7 +44,7 @@ async function bootstrap() {
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({
-    origin: ['http://localhost:8080'], //nextjs frontend
+    origin: [process.env.FRONTEND_URL || 'http://localhost:8080'],
     credentials: true,
   });
   //without this configuration for origin and credentials,
