@@ -16,6 +16,7 @@ import { OrdersModule } from './orders/orders.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { APP_GUARD } from '@nestjs/core';
         },
       ],
     }),
+    HealthModule,
   ],
   providers: [
     {
