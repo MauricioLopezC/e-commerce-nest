@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { OrderStatus, User } from 'src/generated/prisma/client';
+import { OrderStatus } from 'src/generated/prisma/client';
 import { ListAllUsersDto } from './dto/list-all-users.dto';
 import { UserSelect } from './user-constants';
 import { UsersListWithRelations, UserWithStats } from './mapper';
@@ -75,13 +75,35 @@ export class UsersService {
     };
   }
 
-  async findOne(id: number) {
-    return this.prisma.user.findUnique({
+  async findOne(id: number): Promise<UserWithStats> {
+    const user = await this.prisma.user.findUnique({
       where: {
         id: id,
       },
       select: UserSelect,
     });
+
+    const totalOrders = await this.prisma.order.count({
+      where: {
+        userId: id,
+        status: OrderStatus.COMPLETED,
+      },
+    });
+
+    const totalSpent = await this.prisma.order.aggregate({
+      _sum: {
+        finalTotal: true,
+      },
+      where: {
+        userId: id,
+      },
+    });
+
+    return {
+      ...user,
+      totalOrders,
+      totalSpent: totalSpent._sum.finalTotal.toNumber(),
+    };
   }
 
   async findByEmail(email: string) {
