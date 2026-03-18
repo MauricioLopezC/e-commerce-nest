@@ -1,18 +1,9 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Request,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { RegisterService } from './register/register.service';
 import { LoginDto } from './login/dto/login.dto';
 import { LoginService } from './login/login.service';
 import { PublicRoute } from './decorators/public-routes.decorator';
-import { RolesGuard } from './guards/roles.guard';
 import { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { mapToUserResponse } from 'src/users/mapper';
@@ -39,18 +30,8 @@ export class AuthController {
 
   @PublicRoute()
   @Post('/login')
-  async login(
-    @Body() loginDto: LoginDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<LoginResponseDto> {
+  async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
     const token = await this.loginService.login(loginDto);
-
-    if (token) {
-      response.cookie('access-token', token.access_token, {
-        httpOnly: true,
-      });
-    }
-
     return {
       access_token: token.access_token,
     };
@@ -65,11 +46,5 @@ export class AuthController {
     return {
       access_token: '',
     };
-  }
-
-  @Get('/profile')
-  @UseGuards(RolesGuard)
-  getProfile(@Request() req) {
-    return req.user;
   }
 }

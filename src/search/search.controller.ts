@@ -13,11 +13,4 @@ export class SearchController {
   async searchProduct(@Query() query: SearchDto) {
     return mapToSearchResponse(await this.searchService.findByName(query));
   }
-
-  @Get('test')
-  @PublicRoute()
-  async searchText(@Query() query: SearchDto) {
-    const result = await this.searchService.findByNameOrDescription(query);
-    return { result };
-  }
 }
