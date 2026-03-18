@@ -110,9 +110,9 @@ export class StatisticsService {
       const user = users.find((user) => user.id === item.userId);
       return {
         _count: item._count,
-        _sum: { finalTotal: item._sum.finalTotal.toNumber() },
+        _sum: { finalTotal: item._sum.finalTotal?.toNumber() ?? 0 },
         userId: item.userId,
-        userName: user.firstName,
+        userName: user?.firstName || 'Unknown',
       };
     });
 

@@ -201,7 +201,13 @@ export class OrdersService {
 
     return {
       orders,
-      metadata: { ...aggregate },
+      metadata: {
+        _count: aggregate._count,
+        _sum: {
+          total: aggregate._sum.total ?? new Prisma.Decimal(0),
+          finalTotal: aggregate._sum.finalTotal ?? new Prisma.Decimal(0),
+        },
+      },
     };
   }
 
@@ -329,7 +335,11 @@ export class OrdersService {
     return {
       orders,
       metadata: {
-        ...aggregate,
+        _count: aggregate._count,
+        _sum: {
+          total: aggregate._sum.total ?? new Prisma.Decimal(0),
+          finalTotal: aggregate._sum.finalTotal ?? new Prisma.Decimal(0),
+        },
       },
     };
   }

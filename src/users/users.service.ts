@@ -59,7 +59,7 @@ export class UsersService {
       const totalSpent =
         ordersByUser
           .find((order) => order.userId === user.id)
-          ?._sum.finalTotal.toNumber() ?? 0;
+          ?._sum.finalTotal?.toNumber() ?? 0;
       const totalOrders =
         ordersByUser.find((order) => order.userId === user.id)?._count ?? 0;
       return { ...user, totalSpent, totalOrders };
@@ -96,13 +96,14 @@ export class UsersService {
       },
       where: {
         userId: id,
+        status: OrderStatus.COMPLETED,
       },
     });
 
     return {
       ...user,
       totalOrders,
-      totalSpent: totalSpent._sum.finalTotal.toNumber(),
+      totalSpent: totalSpent._sum.finalTotal?.toNumber() ?? 0,
     };
   }
 

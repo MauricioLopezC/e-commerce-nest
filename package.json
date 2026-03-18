@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "reset-seed-db": "bash scripts/reset-db.sh"
+    "db:reset": "bash scripts/reset-db.sh"
   },
   "dependencies": {
     "@getbrevo/brevo": "^2.5.0",
