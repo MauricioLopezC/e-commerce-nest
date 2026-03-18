@@ -26,6 +26,7 @@ async function bootstrap() {
     .setTitle('E-commerce api')
     .setDescription('Api of the Martina clothing store')
     .setVersion('1.0')
+    .addBearerAuth()
     .addGlobalResponse({
       status: 500,
       description: 'Internal server error',

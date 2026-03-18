@@ -15,12 +15,11 @@ import { Prisma } from 'src/generated/prisma/client';
 export class PrismaExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(PrismaExceptionFilter.name);
   catch(error: Prisma.PrismaClientKnownRequestError) {
-    console.log(error.code);
     if (error.code === 'P2025') {
       this.logger.warn(
         `Prisma P2025: ${error.meta?.cause ?? 'Record not found'}`,
       );
-      throw new NotFoundError('Resource not found');
+      throw new NotFoundError('The requested resource was not found.');
     }
 
     if (error.code === 'P2002') {
@@ -30,22 +29,23 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         `Prisma P2002 (unique constraint) on field(s): ${fields}`,
       );
       throw new UniqueConstraintError(
-        `Unique contraint on field(s): ${fields}`,
+        'One or more fields already exist. Please check your data and try again.',
       );
     }
 
     if (error.code === 'P2003') {
       const field = (error.meta as any)?.target ?? 'unknown field';
-      console.log(error.meta?.target);
       this.logger.warn(
         `Prisma P2003 (foreign key constraint) on field: ${field}`,
       );
 
-      throw new ForeignKeyError(`Foreign key error on field ${field}`);
+      throw new ForeignKeyError(
+        'This operation cannot be completed because a related record is missing or restricted.',
+      );
     }
 
     this.logger.error(`Unhandled Prisma error (${error.code})`, error.stack);
 
-    throw new InternalServerErrorException();
+    throw new InternalServerErrorException('An unexpected database error occurred.');
   }
 }
