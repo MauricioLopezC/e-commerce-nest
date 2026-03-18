@@ -8,6 +8,7 @@ import {
 import { Response } from 'express';
 import {
   BusinessError,
+  ForeignKeyError,
   NotAllowedError,
   NotFoundError,
   UniqueConstraintError,
@@ -34,6 +35,8 @@ export class BusinessExceptionFilter implements ExceptionFilter {
       status = HttpStatus.FORBIDDEN;
     } else if (exception instanceof UploadImageError) {
       status = HttpStatus.BAD_REQUEST;
+    } else if (exception instanceof ForeignKeyError) {
+      status = HttpStatus.CONFLICT;
     }
 
     this.logger.warn(

@@ -6,50 +6,24 @@ import {
 import { UpdateProductSkusDto } from './dto/update-product-skus.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from 'src/generated/prisma/client';
-import {
-  NotFoundError,
-  UniqueConstraintError,
-} from 'src/common/errors/business-error';
-import {
-  prismaForeignKeyConstraintError,
-  prismaUniqueConstraintError,
-} from 'src/common/prisma-erros';
+import { NotFoundError } from 'src/common/errors/business-error';
 
 @Injectable()
 export class ProductSkusService {
-  //TODO: Add array image attribute in UpdateProductSkusDto
   constructor(private prisma: PrismaService) {}
 
   async create(productId: number, createProductSkusDto: CreateProductSkusDto) {
-    try {
-      return await this.prisma.productSku.create({
-        data: {
-          productId: productId,
-          size: createProductSkusDto.size,
-          color: createProductSkusDto.color,
-          quantity: createProductSkusDto.quantity,
-        },
-        include: {
-          images: true,
-        },
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === prismaUniqueConstraintError
-      )
-        throw new UniqueConstraintError(
-          `Product sku with size: ${createProductSkusDto.size} and color: ${createProductSkusDto.color} already exists`,
-        );
-
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === prismaForeignKeyConstraintError
-      )
-        throw new NotFoundError(`Product with id ${productId} not found`);
-
-      throw error;
-    }
+    return await this.prisma.productSku.create({
+      data: {
+        productId: productId,
+        size: createProductSkusDto.size,
+        color: createProductSkusDto.color,
+        quantity: createProductSkusDto.quantity,
+      },
+      include: {
+        images: true,
+      },
+    });
   }
 
   async findAll(productId: number) {
@@ -121,19 +95,9 @@ export class ProductSkusService {
         productId,
       }));
 
-    try {
-      return await this.prisma.productSku.createMany({
-        data,
-        skipDuplicates: true,
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === prismaForeignKeyConstraintError
-      ) {
-        throw new NotFoundError(`Product with id: ${productId} not found`);
-      }
-      throw error;
-    }
+    return await this.prisma.productSku.createMany({
+      data,
+      skipDuplicates: true,
+    });
   }
 }

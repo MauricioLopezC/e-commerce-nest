@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import {
+  ForeignKeyError,
   NotFoundError,
   UniqueConstraintError,
 } from 'src/common/errors/business-error';
@@ -33,7 +34,15 @@ export class PrismaExceptionFilter implements ExceptionFilter {
       );
     }
 
-    //TODO: add foreign key error and delete try catchs in product-skus
+    if (error.code === 'P2003') {
+      const field = (error.meta as any)?.target ?? 'unknown field';
+      console.log(error.meta?.target);
+      this.logger.warn(
+        `Prisma P2003 (foreign key constraint) on field: ${field}`,
+      );
+
+      throw new ForeignKeyError(`Foreign key error on field ${field}`);
+    }
 
     this.logger.error(`Unhandled Prisma error (${error.code})`, error.stack);
 

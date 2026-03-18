@@ -31,6 +31,12 @@ export class UniqueConstraintError extends BusinessError {
   }
 }
 
+export class ForeignKeyError extends BusinessError {
+  constructor(message = 'ForeignKey error') {
+    super(message);
+  }
+}
+
 export class UploadImageError extends BusinessError {
   constructor(message = 'Error uploading image') {
     super(message);
